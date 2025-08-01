@@ -1,11 +1,11 @@
-package io.github.username.modid;
+package io.github.slimeistdev.volare;
 
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ModId implements ModInitializer {
-	public static final String ID = "mod_id";
+public class Volare implements ModInitializer {
+	public static final String ID = "volare";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
 
 	@Override
