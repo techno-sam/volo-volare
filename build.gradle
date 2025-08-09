@@ -10,6 +10,10 @@ version = "$modVersion+$branchName"
 archivesBaseName = project.slug
 
 repositories {
+	flatDir {
+		dirs 'libs'
+	}
+
 }
 
 dependencies {
@@ -18,6 +22,11 @@ dependencies {
 
 	modImplementation libs.fl
 	modImplementation libs.fapi
+
+	modImplementation libs.jsonem
+	include libs.jsonem
+
+	include(implementation(annotationProcessor(libs.mixinextras.get())))
 }
 
 processResources {
@@ -40,6 +49,17 @@ processResources {
 	inputs.properties meta
 	filesMatching("*.mod.json") { expand(meta) }
 	filesMatching("META-INF/*mods.toml") { expand(meta) }
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/${modId}.accesswidener")
+
+	runs.configureEach {
+		vmArg("-XX:+AllowEnhancedClassRedefinition")
+		vmArg("-XX:+IgnoreUnrecognizedVMOptions")
+		vmArg("-Dmixin.debug.export=true")
+		vmArg("-Dfabric-tag-conventions-v2.missingTagTranslationWarning=VERBOSE")
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
