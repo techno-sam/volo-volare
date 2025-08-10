@@ -19,7 +19,7 @@ public record RotationC2SPacket(Quaternionf quat) implements C2SPacket {
 
 	@Override
 	public void handle(ServerPlayerEntity sender) {
-		if (sender.getVehicle() instanceof GliderEntity glider) {
+		if (sender.getControllingVehicle() instanceof GliderEntity glider) {
 			glider.setQuat(quat);
 
 			var euler = MathUtil.toEuler(glider.getQuat());

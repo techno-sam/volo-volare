@@ -8,8 +8,9 @@ import org.joml.Vector3fc;
  * @param wings a {@link GliderWings} instance containing the glider's wings and control surfaces
  * @param centerOfMass the center of mass of the glider in model space (meter-scale, not pixel-scale)
  * @param centerOfPressure the center of pressure of the glider in model space (meter-scale, not pixel-scale)
+ * @param wingtipOffset the offset of the wing tips from the center of mass in model space (meter-scale, not pixel-scale)
  */
-public record GliderParams(RigidBody body, GliderWings wings, Vector3fc centerOfMass, Vector3fc centerOfPressure) {
+public record GliderParams(RigidBody body, GliderWings wings, Vector3fc centerOfMass, Vector3fc centerOfPressure, Vector3fc wingtipOffset) {
 	private static final float BALSA_DENSITY = 2.0f; // kg/m^3 (160 originally, this is hacked to be lighter because why not)
 
 	// glider design based on https://en.wikipedia.org/wiki/Rolladen-Schneider_LS4
@@ -81,6 +82,8 @@ public record GliderParams(RigidBody body, GliderWings wings, Vector3fc centerOf
 		centerOfPressure.mul(scaling);
 		centerOfPressure.add(centerOfMass);
 
-		return new GliderParams(rigidBody, wings, centerOfMass, centerOfPressure);
+		Vector3fc wingTipOffset = new Vector3f(rightAileronPos).div(scaling).add(32 / 16f / 2f, 0, 0);
+
+		return new GliderParams(rigidBody, wings, centerOfMass, centerOfPressure, wingTipOffset);
 	}
 }

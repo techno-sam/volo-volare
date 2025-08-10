@@ -5,6 +5,8 @@ import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
 import io.github.slimeistdev.volare.network.VolarePackets;
 import io.github.slimeistdev.volare.network.c2s.RotationC2SPacket;
+import io.github.slimeistdev.volare.network.c2s.SetGliderPhysicsC2SPacket;
+import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
 import io.github.slimeistdev.volare.util.MathUtil;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -20,12 +22,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.EntityTrackerEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -36,6 +41,7 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
@@ -48,6 +54,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	);
 
 	protected static final TrackedData<Quaternionf> QUAT_SERVER = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.QUATERNION_F);
+	protected static final TrackedData<List<ParticleEffect>> PARTICLES = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.PARTICLE_LIST);
 
 	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, 3);
 	private final Supplier<Item> itemSupplier;
@@ -59,9 +66,15 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	private final GliderWings wings;
 	private final Vector3fc centerOfMass;
 	private final Vector3fc centerOfPressure;
+	private final Vector3fc wingtipOffset;
 
 	private int pitchControl = 0;
 	private int rollControl = 0;
+
+	private boolean wasLogicalSideForUpdatingMovement = false;
+
+	private @Nullable Vector3f frozenVelocity;
+	private List<ParticleEffect> wingtipParticles = List.of();
 
 	public static EntityType.EntityFactory<GliderEntity> create(Supplier<Item> itemSupplier) {
 		return (entityType, world) -> new GliderEntity(entityType, world, itemSupplier);
@@ -76,12 +89,26 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.wings = params.wings();
 		this.centerOfMass = params.centerOfMass();
 		this.centerOfPressure = params.centerOfPressure();
+		this.wingtipOffset = params.wingtipOffset();
 		Volare.LOG.info(
 			"GliderEntity created with center of mass at ({}, {}, {}) and center of pressure at ({}, {}, {}). Mass: {} kg",
 			centerOfMass.x()*16, centerOfMass.y()*16, centerOfMass.z()*16,
 			centerOfPressure.x()*16, centerOfPressure.y()*16, centerOfPressure.z()*16,
 			rigidBody.mass
 		);
+	}
+
+	private void setWingtipParticles(List<ParticleEffect> particles) {
+		dataTracker.set(PARTICLES, particles);
+		this.wingtipParticles = particles;
+	}
+
+	public void applyPhysicsSnapshot(PhysicsSnapshot snapshot) {
+		snapshot.applyTo(rigidBody);
+	}
+
+	public PhysicsSnapshot createPhysicsSnapshot() {
+		return new PhysicsSnapshot(rigidBody);
 	}
 
 	public Vector3fc getCenterOfMass() {
@@ -97,14 +124,20 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		super.initDataTracker(builder);
 
 		builder.add(QUAT_SERVER, new Quaternionf());
+		builder.add(PARTICLES, List.of());
 	}
 
 	@Override
 	public void onTrackedDataSet(TrackedData<?> data) {
 		super.onTrackedDataSet(data);
 
-		if (QUAT_SERVER.equals(data) && getWorld().isClient && !isLogicalSideForUpdatingMovement()) {
-			updateTrackedPositionAndAngles$Quat(new Quaternionf(getQuat()));
+		if (getWorld().isClient) {
+			if (QUAT_SERVER.equals(data) && !isLogicalSideForUpdatingMovement()) {
+				updateTrackedPositionAndAngles$Quat(new Quaternionf(getQuat()));
+			}
+			if (PARTICLES.equals(data)) {
+				this.wingtipParticles = dataTracker.get(PARTICLES);
+			}
 		}
 	}
 
@@ -122,11 +155,22 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected void readCustomData(ReadView view) {
 		float roll = view.getFloat("Roll", 0.0f);
 		refreshPositionAndAngles$Quat(new MathUtil.EulerAngles(getYaw(), getPitch(), roll).getQuat());
+
+		frozenVelocity = view.read("FrozenMotion", Codecs.VECTOR_3F).orElse(null);
+		setWingtipParticles(view.read("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf()).orElse(List.of()));
 	}
 
 	@Override
 	protected void writeCustomData(WriteView view) {
 		view.putFloat("Roll", MathUtil.toEuler(getQuat()).roll());
+
+		if (frozenVelocity != null) {
+			view.put("FrozenMotion", Codecs.VECTOR_3F, frozenVelocity);
+		}
+
+		if (!wingtipParticles.isEmpty()) {
+			view.put("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf(), wingtipParticles);
+		}
 	}
 
 	@Override
@@ -310,6 +354,16 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected void addPassenger(Entity passenger) {
 		super.addPassenger(passenger);
 
+		if (frozenVelocity != null) {
+			rigidBody.setVelocity(rigidBody.directionToGlobal(frozenVelocity));
+			rigidBody.setAngularVelocity(new Vector3f(0));
+			frozenVelocity = null;
+		}
+
+		if (passenger instanceof ServerPlayerEntity serverPlayer) {
+			VolarePackets.PACKETS.sendTo(serverPlayer, new SetGliderPhysicsS2CPacket(this));
+		}
+
 		if (passenger instanceof LivingEntity living && false) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
 			if (scale != null && !scale.hasModifier(SCALE_MODIFIER.id())) {
@@ -332,6 +386,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	@Override
 	public void tick() {
+		World world = getWorld();
+		boolean isClient = world.isClient;
+
 		this.updateLastAngles();
 
 		if (this.getDamageWobbleTicks() > 0) {
@@ -346,36 +403,72 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		interpolator.tick();
 
 		if (this.isLogicalSideForUpdatingMovement()) {
-			//this.applyGravity();
-			//this.applyDrag();
-
+			if (!wasLogicalSideForUpdatingMovement) {
+				var vel = rigidBody.getVelocity();
+				this.setVelocity(vel.x(), vel.y(), -vel.z());
+			}
+			wasLogicalSideForUpdatingMovement = true;
 			Quaternionfc quat;
-			if (this.getWorld().isClient) {
+			if (isClient) {
 				this.updateControls();
 				quat = getQuatClient();
 			} else {
 				quat = getQuat();
 			}
 
-			Quaternionf newQuat = this.physicsStep(quat);
-			setQuat(newQuat);
-			setQuatClient(newQuat);
+			if (frozenVelocity == null) {
+				Quaternionf newQuat = this.physicsStep(quat);
+				setQuat(newQuat);
+				setQuatClient(newQuat);
 
-			this.move(MovementType.SELF, getVelocity());
-			this.tickBlockCollision();
+				this.move(MovementType.SELF, getVelocity());
+				this.tickBlockCollision();
+			}
 
-			if (this.getWorld().isClient) {
+			if (isClient) {
 				VolarePackets.PACKETS.send(new RotationC2SPacket(getQuatClient()));
+				VolarePackets.PACKETS.send(new SetGliderPhysicsC2SPacket(this));
 			}
 		} else {
 			this.setVelocity(Vec3d.ZERO);
+			if (wasLogicalSideForUpdatingMovement) {
+				rigidBody.setVelocity(new Vector3f(0));
+			}
+			wasLogicalSideForUpdatingMovement = false;
 		}
 
 		// set pitch and yaw from quat
-		Quaternionfc quat = this.getWorld().isClient ? getQuatClient() : getQuat();
+		Quaternionfc quat = isClient ? getQuatClient() : getQuat();
 		var euler = MathUtil.toEuler(quat);
 		setPitch(euler.pitch());
 		setYaw(euler.yaw());
+		rigidBody.setOrientation(quat);
+
+		if (isClient && !wingtipParticles.isEmpty()) {
+			var lastPos = getLerpedPos(0.0f).toVector3f();
+			var pos = getLerpedPos(1.0f).toVector3f();
+			var vel = pos.sub(lastPos, lastPos);
+			pos.sub(vel.mul(0.5f));
+			float speed = vel.length();
+
+			if (random.nextFloat() * (speed + 0.2) > 0.2f) {
+				Vector3f rightWingtipOffset = rigidBody.directionToGlobal(new Vector3f(wingtipOffset).add(centerOfMass)).mul(1, 1, -1);
+				Vector3f leftWingtipOffset = rigidBody.directionToGlobal(new Vector3f(wingtipOffset).mul(-1, 1, 1).add(centerOfMass)).mul(1, 1, -1);
+
+				rightWingtipOffset.add(pos);
+				leftWingtipOffset.add(pos);
+
+				for (ParticleEffect particle : wingtipParticles) {
+					float speedFactor = MathHelper.clamp(speed * 0.5f, 0.5f, 2.0f) * 0.3f;
+					float oX = (random.nextFloat() - 0.5f) * speedFactor;
+					float oY = (random.nextFloat() - 0.5f) * speedFactor;
+					float oZ = (random.nextFloat() - 0.5f) * speedFactor;
+
+					world.addParticleClient(particle, rightWingtipOffset.x + oX, rightWingtipOffset.y + oY, rightWingtipOffset.z + oZ, oX, oY, oZ);
+					world.addParticleClient(particle, leftWingtipOffset.x + oX, leftWingtipOffset.y + oY, leftWingtipOffset.z + oZ, oX, oY, oZ);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -424,11 +517,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		/* simulate */
 
-		/*engine
-		float forwardSpeed = rigidBody.directionToLocal(rigidBody.getVelocity()).z;
-		float forwardThrust = Math.max(0.0f, 0.5f - forwardSpeed) * 0.2f;
-		rigidBody.applyForceAtPoint(new Vector3f(0.0f, 0.0f, forwardThrust), new Vector3f(0, 1.0f, -8.0f).mul(1 / 16f).add(centerOfMass));*/
-
+		// gravity
 		rigidBody.applyForceAtCoM(rigidBody.directionToLocal(scratch.set(0, -9.8f * rigidBody.mass / 20.0f, 0)));
 
 		// wings
