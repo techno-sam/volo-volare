@@ -38,6 +38,8 @@ import org.joml.Vector3fc;
 
 import java.util.function.Supplier;
 
+import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
+
 public class GliderEntity extends VehicleEntity implements QuatEntity {
 	private static final EntityAttributeModifier SCALE_MODIFIER = new EntityAttributeModifier(
 		Volare.id("glider_scale"),
@@ -393,8 +395,10 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			}
 
 			friction = 0.8F;
-		} else {
+		} else if (isOnGround()) {
 			friction = 0.99F;
+		} else {
+			friction = 1.0F;
 		}
 
 		this.setVelocity(vel.multiply(friction));
@@ -412,6 +416,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	private Quaternionf physicsStep(Quaternionfc quat) {
+		Vector3f scratch = new Vector3f();
+
 		/* prepare */
 		rigidBody.setVelocity(getVelocity().toVector3f().mul(1, 1, -1)); // negate z to convert to right-handed coordinates
 		rigidBody.setOrientation(quat);
@@ -423,24 +429,42 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		float forwardThrust = Math.max(0.0f, 0.5f - forwardSpeed) * 0.2f;
 		rigidBody.applyForceAtPoint(new Vector3f(0.0f, 0.0f, forwardThrust), new Vector3f(0, 1.0f, -8.0f).mul(1 / 16f).add(centerOfMass));*/
 
-		rigidBody.applyForceAtCoM(rigidBody.directionToLocal(new Vector3f(0, -9.8f * rigidBody.mass / 20.0f, 0)));
+		rigidBody.applyForceAtCoM(rigidBody.directionToLocal(scratch.set(0, -9.8f * rigidBody.mass / 20.0f, 0)));
 
 		// wings
 		wings.applyControls(pitchControl, rollControl);
-		boolean wingForcesApplied = wings.applyForcesTo(rigidBody, 1.0f / 20.0f, (float) (getY() - 64));
+		float airDensity = isTouchingWater() ? 1.5159375f : 1.225f; // sea level standard atmosphere
+		boolean wingForcesApplied = wings.applyForcesTo(rigidBody, 1.0f / 20.0f, airDensity);
 
 		rigidBody.endStep(1.0f / 20.0f);
 
 		/* extract results */
 		var vel = rigidBody.getVelocity();
 
-		if (vel.lengthSquared() > 100 * 100) {
+		if (vel.lengthSquared() > 100 * 100) { // prevent physics explosions
 			vel = new Vector3f(0);
 			remove(RemovalReason.KILLED);
+			Volare.LOG.warn("GliderEntity {} ({}) exploded due to excessive velocity: {}", this.getUuid(), this, vel);
 		}
 
 		float f = wingForcesApplied ? 1.0f : 0.9f; // if no wing forces, apply magic drag (TM)
 		setVelocity(vel.x() * f, vel.y() * f, vel.z() * f * -1);
+		applyDrag();
+
+		if (isOnGround()) {
+			var euler = MathUtil.toEuler(rigidBody.getOrientation());
+			Vector3fc currentAngularVelocity = rigidBody.getAngularVelocity();
+			Vector3f targetAngularVelocity = new Vector3f(
+				MathHelper.clamp(euler.pitch() * -0.1f, -10f, 10f) * RADIANS_PER_DEGREE,
+				0,
+				MathHelper.clamp(euler.roll() * -0.1f, -10f, 10f) * RADIANS_PER_DEGREE
+			);
+			rigidBody.setAngularVelocity(
+				currentAngularVelocity.mul(0.8f, scratch)
+					.add(targetAngularVelocity.mul(0.2f))
+			);
+		}
+
 		return new Quaternionf(rigidBody.getOrientation());
 	}
 }

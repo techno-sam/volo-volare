@@ -47,6 +47,13 @@ public class RigidBody {
 		return velocity;
 	}
 
+	/**
+	 * set angular velocity, in local space. radians/sec
+	 */
+	public void setAngularVelocity(Vector3fc angularVelocity) {
+		this.angularVelocity.set(angularVelocity);
+	}
+
 	/** get angular velocity, in local space. radians/sec */
 	public Vector3fc getAngularVelocity() {
 		return angularVelocity;

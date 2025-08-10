@@ -55,15 +55,18 @@ public record GliderParams(RigidBody body, GliderWings wings, Vector3fc centerOf
 
 		RigidBody rigidBody = new RigidBody(params);
 
+		Vector3fc scaling = new Vector3f(1, 1, -1); // we flip z velocity elsewhere to make things right-handed, so we have to do that too here
+
 		// conventional wisdom says center of pressure is at 1/4 chord length from the leading edge
 		// the offset value is the center, so we need to move 1/4 chord length forward (-z)
-		Vector3fc leftAileronPos = params.offset("left_wing").sub(0, 0, (3 / 16f) * 0.25f, new Vector3f());
-		Vector3fc rightAileronPos = params.offset("right_wing").sub(0, 0, (3 / 16f) * 0.25f, new Vector3f());
-		Vector3fc elevatorPos = params.offset("left_elevator")
-			.add(params.offset("right_elevator"), new Vector3f())
+		Vector3fc leftAileronPos = new Vector3f(params.offset("left_wing")).sub(0, 0, (3 / 16f) * 0.25f).mul(scaling);
+		Vector3fc rightAileronPos = new Vector3f(params.offset("right_wing")).sub(0, 0, (3 / 16f) * 0.25f).mul(scaling);
+		Vector3fc elevatorPos = new Vector3f(params.offset("left_elevator"))
+			.add(params.offset("right_elevator"))
 			.mul(0.5f)
-			.sub(0, 0, (3 / 16f) * 0.25f, new Vector3f());
-		Vector3fc tailPos = params.offset("tail");
+			.sub(0, 0, (3 / 16f) * 0.25f)
+			.mul(scaling);
+		Vector3fc tailPos = new Vector3f(params.offset("tail")).mul(scaling);
 
 		GliderWings wings = new GliderWings(
 			new Wing(leftAileronPos, 32 / 16f, 3 / 16f, Airfoils.NACA2412),
@@ -75,6 +78,7 @@ public record GliderParams(RigidBody body, GliderWings wings, Vector3fc centerOf
 		Vector3fc centerOfMass = params.centerOfMass();
 		Vector3f centerOfPressure = new Vector3f();
 		wings.calculateCenterOfPressure(5.0f, centerOfPressure);
+		centerOfPressure.mul(scaling);
 		centerOfPressure.add(centerOfMass);
 
 		return new GliderParams(rigidBody, wings, centerOfMass, centerOfPressure);

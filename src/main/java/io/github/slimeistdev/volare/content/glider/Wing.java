@@ -83,10 +83,10 @@ public class Wing {
 	 * Apply lift and drag forces to the given rigid body.
 	 * @param body the rigid body to apply forces to
 	 * @param dt time step
-	 * @param altitude height in meters above sea level
+	 * @param airDensity density in kg/m^3 of the air at the current altitude
 	 * @return whether forces were applied
 	 */
-	public boolean applyForcesTo(RigidBody body, float dt, float altitude) {
+	public boolean applyForcesTo(RigidBody body, float dt, float airDensity) {
 		Vector3f local_vel = body.velocityAtPoint(centerOfPressure);
 
 		//float speed = local_vel.length(); // this provides lift when wing is perpendicular to the flow, which is bad
@@ -126,8 +126,6 @@ public class Wing {
 
 		float inducedDrag = (cl*cl) / (MathHelper.PI * aspectRatio * efficiencyFactor);
 		cd += inducedDrag;
-
-		float airDensity = 1.225f; // sea level standard atmosphere
 
 		float dynamic_pressure = 0.5f * speed * speed * airDensity * area;
 

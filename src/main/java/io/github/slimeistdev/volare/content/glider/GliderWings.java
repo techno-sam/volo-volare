@@ -7,27 +7,28 @@ public record GliderWings(Wing leftAileron, Wing rightAileron, Wing elevator, Wi
 	 * Apply lift and drag forces to the given rigid body.
 	 * @param body the rigid body to apply forces to
 	 * @param dt time step
-	 * @param altitude height in meters above sea level
+	 * @param airDensity density in kg/m^3 of the air at the current altitude
 	 * @return whether any forces were applied
 	 */
-	public boolean applyForcesTo(RigidBody body, float dt, float altitude) {
+	public boolean applyForcesTo(RigidBody body, float dt, float airDensity) {
 		boolean any = false;
-		any |= leftAileron.applyForcesTo(body, dt, altitude);
-		any |= rightAileron.applyForcesTo(body, dt, altitude);
-		any |= elevator.applyForcesTo(body, dt, altitude);
-		any |= rudder.applyForcesTo(body, dt, altitude);
+		any |= leftAileron.applyForcesTo(body, dt, airDensity);
+		any |= rightAileron.applyForcesTo(body, dt, airDensity);
+		any |= elevator.applyForcesTo(body, dt, airDensity);
+		any |= rudder.applyForcesTo(body, dt, airDensity);
 		return any;
 	}
 
-	public void applyControls(float pitchControl, float rollControl) {
+	@SuppressWarnings("UnnecessaryLocalVariable")
+	public void applyControls(float pitchControl, float yawControl) {
 		// coordinate rudder and ailerons
-		float rudderControl = rollControl;//* 0.5f;
-		rollControl = 0;
+		float aileronControl = yawControl * 0.25f;
+		float rudderControl = yawControl;
 
-		leftAileron.setControlInput(-rollControl);
-		rightAileron.setControlInput(rollControl);
-		elevator.setControlInput(-pitchControl);
-		rudder.setControlInput(-rudderControl);
+		leftAileron.setControlInput(-aileronControl);
+		rightAileron.setControlInput(aileronControl);
+		elevator.setControlInput(pitchControl);
+		rudder.setControlInput(rudderControl);
 	}
 
 	/**
