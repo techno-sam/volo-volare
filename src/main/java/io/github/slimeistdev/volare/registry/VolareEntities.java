@@ -5,7 +5,6 @@ import io.github.slimeistdev.volare.content.glider.GliderEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
@@ -13,7 +12,7 @@ import net.minecraft.registry.RegistryKeys;
 public class VolareEntities {
 	public static final EntityType<GliderEntity> GLIDER = register(
 		"glider",
-		EntityType.Builder.create(GliderEntity.create(() -> Items.STONE), SpawnGroup.MISC)
+		EntityType.Builder.create(GliderEntity.create(() -> VolareItems.GLIDER), SpawnGroup.MISC)
 			.dropsNothing()
 			.dimensions(1.375F, 0.5625F)
 			.eyeHeight(0.5625F)

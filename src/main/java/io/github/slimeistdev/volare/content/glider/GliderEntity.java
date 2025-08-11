@@ -7,7 +7,10 @@ import io.github.slimeistdev.volare.network.VolarePackets;
 import io.github.slimeistdev.volare.network.c2s.RotationC2SPacket;
 import io.github.slimeistdev.volare.network.c2s.SetGliderPhysicsC2SPacket;
 import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
+import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
 import io.github.slimeistdev.volare.util.MathUtil;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.ComponentsAccess;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -73,7 +76,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	private boolean wasLogicalSideForUpdatingMovement = false;
 
-	private @Nullable Vector3f frozenVelocity;
+	private @Nullable Vector3f frozenMotion;
 	private List<ParticleEffect> wingtipParticles = List.of();
 
 	public static EntityType.EntityFactory<GliderEntity> create(Supplier<Item> itemSupplier) {
@@ -96,6 +99,38 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			centerOfPressure.x()*16, centerOfPressure.y()*16, centerOfPressure.z()*16,
 			rigidBody.mass
 		);
+	}
+
+	public void initPosition(double x, double y, double z) {
+		this.setPosition(x, y, z);
+		this.lastX = x;
+		this.lastY = y;
+		this.lastZ = z;
+	}
+
+	public void initRotation(float pitch, float yaw, float roll) {
+		this.setPitch(pitch);
+		this.setYaw(yaw);
+		this.refreshPositionAndAngles$Quat(new MathUtil.EulerAngles(yaw, pitch, roll).getQuat());
+	}
+
+	@Override
+	protected void copyComponentsFrom(ComponentsAccess from) {
+		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_PARTICLES);
+		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_FROZEN_MOTION);
+		super.copyComponentsFrom(from);
+	}
+
+	@Override
+	protected <T> boolean setApplicableComponent(ComponentType<T> type, T value) {
+		if (type == VolareDataComponentTypes.GLIDER_PARTICLES) {
+			this.setWingtipParticles(castComponentValue(VolareDataComponentTypes.GLIDER_PARTICLES, value).particles());
+			return true;
+		} else if (type == VolareDataComponentTypes.GLIDER_FROZEN_MOTION) {
+			this.frozenMotion = castComponentValue(VolareDataComponentTypes.GLIDER_FROZEN_MOTION, value).frozenMotionMut();
+			return true;
+		}
+		return super.setApplicableComponent(type, value);
 	}
 
 	private void setWingtipParticles(List<ParticleEffect> particles) {
@@ -156,7 +191,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		float roll = view.getFloat("Roll", 0.0f);
 		refreshPositionAndAngles$Quat(new MathUtil.EulerAngles(getYaw(), getPitch(), roll).getQuat());
 
-		frozenVelocity = view.read("FrozenMotion", Codecs.VECTOR_3F).orElse(null);
+		frozenMotion = view.read("FrozenMotion", Codecs.VECTOR_3F).orElse(null);
 		setWingtipParticles(view.read("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf()).orElse(List.of()));
 	}
 
@@ -164,8 +199,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected void writeCustomData(WriteView view) {
 		view.putFloat("Roll", MathUtil.toEuler(getQuat()).roll());
 
-		if (frozenVelocity != null) {
-			view.put("FrozenMotion", Codecs.VECTOR_3F, frozenVelocity);
+		if (frozenMotion != null) {
+			view.put("FrozenMotion", Codecs.VECTOR_3F, frozenMotion);
 		}
 
 		if (!wingtipParticles.isEmpty()) {
@@ -354,10 +389,10 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected void addPassenger(Entity passenger) {
 		super.addPassenger(passenger);
 
-		if (frozenVelocity != null) {
-			rigidBody.setVelocity(rigidBody.directionToGlobal(frozenVelocity));
+		if (frozenMotion != null) {
+			rigidBody.setVelocity(rigidBody.directionToGlobal(frozenMotion));
 			rigidBody.setAngularVelocity(new Vector3f(0));
-			frozenVelocity = null;
+			frozenMotion = null;
 		}
 
 		if (passenger instanceof ServerPlayerEntity serverPlayer) {
@@ -416,7 +451,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				quat = getQuat();
 			}
 
-			if (frozenVelocity == null) {
+			if (frozenMotion == null) {
 				Quaternionf newQuat = this.physicsStep(quat);
 				setQuat(newQuat);
 				setQuatClient(newQuat);
