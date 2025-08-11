@@ -7,13 +7,23 @@ plugins {
 }
 
 version = "$modVersion+$branchName"
-archivesBaseName = project.slug
+base.archivesName = project.slug
 
 repositories {
 	flatDir {
 		dirs 'libs'
 	}
-
+	exclusiveContent {
+		forRepository {
+			//noinspection ForeignDelegate
+			maven {
+				url "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
 }
 
 dependencies {

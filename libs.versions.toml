@@ -19,4 +19,4 @@ fl = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fl" }
 yarn = { group = "net.fabricmc", name = "yarn", version.ref = "yarn" }
 fapi = { group = "net.fabricmc.fabric-api", name = "fabric-api", version.ref = "fapi" }
 mixinextras = { group = "io.github.llamalad7", name = "mixinextras-fabric", version.ref = "mixinextras" }
-jsonem = { group = "io.github.foundationgames", name = "jsonem", version.ref = "jsonem" }
+jsonem = { group = "maven.modrinth", name = "jsonem", version.ref = "jsonem" }
