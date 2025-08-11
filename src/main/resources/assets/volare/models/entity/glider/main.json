@@ -19,8 +19,8 @@
                         1
                     ],
                     "uv": [
-                        19,
-                        8
+                        16,
+                        57
                     ]
                 },
                 {
@@ -36,8 +36,8 @@
                         1
                     ],
                     "uv": [
-                        20,
-                        27
+                        22,
+                        52
                     ]
                 },
                 {
@@ -53,8 +53,8 @@
                         1
                     ],
                     "uv": [
-                        33,
-                        21
+                        0,
+                        61
                     ]
                 },
                 {
@@ -70,8 +70,8 @@
                         9
                     ],
                     "uv": [
-                        8,
-                        17
+                        11,
+                        54
                     ]
                 }
             ],
@@ -92,8 +92,8 @@
                         1
                     ],
                     "uv": [
-                        19,
-                        12
+                        12,
+                        57
                     ]
                 },
                 {
@@ -109,8 +109,8 @@
                         1
                     ],
                     "uv": [
-                        24,
-                        27
+                        27,
+                        52
                     ]
                 },
                 {
@@ -126,8 +126,8 @@
                         1
                     ],
                     "uv": [
-                        33,
-                        23
+                        0,
+                        59
                     ]
                 },
                 {
@@ -143,8 +143,8 @@
                         9
                     ],
                     "uv": [
-                        0,
-                        27
+                        22,
+                        53
                     ]
                 }
             ],
@@ -172,81 +172,348 @@
                         29
                     ],
                     "uv": [
-                        0,
-                        8
-                    ]
-                },
-                {
-                    "name": "wing_left",
-                    "offset": [
-                        0,
-                        -2.5,
-                        -1.5
-                    ],
-                    "dimensions": [
-                        32,
-                        1,
-                        3
-                    ],
-                    "uv": [
-                        0,
-                        0
-                    ]
-                },
-                {
-                    "name": "wing_right",
-                    "offset": [
-                        -32,
-                        -2.5,
-                        -1.5
-                    ],
-                    "dimensions": [
-                        32,
-                        1,
-                        3
-                    ],
-                    "uv": [
-                        0,
-                        4
-                    ]
-                },
-                {
-                    "name": "elevator_left",
-                    "offset": [
-                        0,
-                        -7.5,
-                        19.15
-                    ],
-                    "dimensions": [
-                        8,
-                        1,
-                        3
-                    ],
-                    "uv": [
-                        0,
-                        8
-                    ]
-                },
-                {
-                    "name": "elevator_right",
-                    "offset": [
-                        -8,
-                        -7.5,
-                        19.15
-                    ],
-                    "dimensions": [
-                        8,
-                        1,
-                        3
-                    ],
-                    "uv": [
-                        0,
-                        12
+                        10,
+                        7
                     ]
                 }
             ],
             "children": {
-                "tail": {
+                "wing_left": {
+                    "cuboids": [
+                        {
+                            "name": "root",
+                            "offset": [
+                                0,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                19,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                0,
+                                1
+                            ],
+                            "mirror": true
+                        },
+                        {
+                            "name": "middle",
+                            "offset": [
+                                19,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                10,
+                                1,
+                                1
+                            ],
+                            "uv": [
+                                45,
+                                0
+                            ],
+                            "mirror": true
+                        },
+                        {
+                            "name": "tip",
+                            "offset": [
+                                29,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                3,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                68,
+                                1
+                            ],
+                            "mirror": true
+                        }
+                    ],
+                    "children": {
+                        "aileron_left": {
+                            "transform": {
+                                "origin": [
+                                    24,
+                                    -2,
+                                    0
+                                ]
+                            },
+                            "cuboids": [
+                                {
+                                    "name": "aileron",
+                                    "offset": [
+                                        -5,
+                                        -0.5,
+                                        -0.5
+                                    ],
+                                    "dimensions": [
+                                        10,
+                                        1,
+                                        2
+                                    ],
+                                    "uv": [
+                                        44,
+                                        2
+                                    ],
+                                    "mirror": true
+                                }
+                            ],
+                            "children": {}
+                        }
+                    }
+                },
+                "wing_right": {
+                    "cuboids": [
+                        {
+                            "name": "root",
+                            "offset": [
+                                -19,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                19,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                0,
+                                1
+                            ]
+                        },
+                        {
+                            "name": "middle",
+                            "offset": [
+                                -29,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                10,
+                                1,
+                                1
+                            ],
+                            "uv": [
+                                45,
+                                0
+                            ]
+                        },
+                        {
+                            "name": "tip",
+                            "offset": [
+                                -32,
+                                -2.5,
+                                -1.5
+                            ],
+                            "dimensions": [
+                                3,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                68,
+                                1
+                            ]
+                        }
+                    ],
+                    "children": {
+                        "aileron_right": {
+                            "transform": {
+                                "origin": [
+                                    -24,
+                                    -2,
+                                    0
+                                ]
+                            },
+                            "cuboids": [
+                                {
+                                    "name": "aileron",
+                                    "offset": [
+                                        -5,
+                                        -0.5,
+                                        -0.5
+                                    ],
+                                    "dimensions": [
+                                        10,
+                                        1,
+                                        2
+                                    ],
+                                    "uv": [
+                                        44,
+                                        2
+                                    ]
+                                }
+                            ],
+                            "children": {}
+                        }
+                    }
+                },
+                "horizontal_stabilizer": {
+                    "transform": {
+                        "origin": [
+                            0,
+                            0,
+                            0.5
+                        ]
+                    },
+                    "cuboids": [
+                        {
+                            "name": "root",
+                            "offset": [
+                                -2,
+                                -7.5,
+                                18.65
+                            ],
+                            "dimensions": [
+                                4,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                0,
+                                8
+                            ]
+                        },
+                        {
+                            "name": "middle_left",
+                            "offset": [
+                                2,
+                                -7.5,
+                                18.65
+                            ],
+                            "dimensions": [
+                                4,
+                                1,
+                                1
+                            ],
+                            "uv": [
+                                15,
+                                7
+                            ],
+                            "mirror": true
+                        },
+                        {
+                            "name": "middle_right",
+                            "offset": [
+                                -6,
+                                -7.5,
+                                18.65
+                            ],
+                            "dimensions": [
+                                4,
+                                1,
+                                1
+                            ],
+                            "uv": [
+                                15,
+                                7
+                            ]
+                        },
+                        {
+                            "name": "tip_left",
+                            "offset": [
+                                6,
+                                -7.5,
+                                18.65
+                            ],
+                            "dimensions": [
+                                2,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                26,
+                                8
+                            ],
+                            "mirror": true
+                        },
+                        {
+                            "name": "tip_right",
+                            "offset": [
+                                -8,
+                                -7.5,
+                                18.65
+                            ],
+                            "dimensions": [
+                                2,
+                                1,
+                                3
+                            ],
+                            "uv": [
+                                26,
+                                8
+                            ]
+                        }
+                    ],
+                    "children": {
+                        "elevator_left": {
+                            "transform": {
+                                "origin": [
+                                    4,
+                                    -7,
+                                    20.15
+                                ]
+                            },
+                            "cuboids": [
+                                {
+                                    "name": "elevator",
+                                    "offset": [
+                                        -2,
+                                        -0.5,
+                                        -0.5
+                                    ],
+                                    "dimensions": [
+                                        4,
+                                        1,
+                                        2
+                                    ],
+                                    "uv": [
+                                        14,
+                                        9
+                                    ],
+                                    "mirror": true
+                                }
+                            ],
+                            "children": {}
+                        },
+                        "elevator_right": {
+                            "transform": {
+                                "origin": [
+                                    -4,
+                                    -7,
+                                    20.15
+                                ]
+                            },
+                            "cuboids": [
+                                {
+                                    "name": "elevator",
+                                    "offset": [
+                                        -2,
+                                        -0.5,
+                                        -0.5
+                                    ],
+                                    "dimensions": [
+                                        4,
+                                        1,
+                                        2
+                                    ],
+                                    "uv": [
+                                        14,
+                                        9
+                                    ]
+                                }
+                            ],
+                            "children": {}
+                        }
+                    }
+                },
+                "vertical_stabilizer": {
                     "transform": {
                         "origin": [
                             0,
@@ -261,7 +528,7 @@
                     },
                     "cuboids": [
                         {
-                            "name": "tail",
+                            "name": "top",
                             "offset": [
                                 -0.5,
                                 -4.8,
@@ -269,16 +536,80 @@
                             ],
                             "dimensions": [
                                 1,
-                                5,
+                                1,
                                 3
                             ],
                             "uv": [
                                 0,
-                                16
+                                14
+                            ]
+                        },
+                        {
+                            "name": "middle",
+                            "offset": [
+                                -0.5,
+                                -3.8,
+                                -1.5130000000000017
+                            ],
+                            "dimensions": [
+                                1,
+                                3,
+                                1
+                            ],
+                            "uv": [
+                                2,
+                                18
+                            ]
+                        },
+                        {
+                            "name": "bottom",
+                            "offset": [
+                                -0.5,
+                                -0.7999999999999998,
+                                -1.5130000000000017
+                            ],
+                            "dimensions": [
+                                1,
+                                0.9999999999999998,
+                                3
+                            ],
+                            "uv": [
+                                0,
+                                22
                             ]
                         }
                     ],
-                    "children": {}
+                    "children": {
+                        "rudder": {
+                            "transform": {
+                                "origin": [
+                                    -0.5,
+                                    0,
+                                    -0.5
+                                ]
+                            },
+                            "cuboids": [
+                                {
+                                    "name": "rudder",
+                                    "offset": [
+                                        0,
+                                        -3.8,
+                                        0
+                                    ],
+                                    "dimensions": [
+                                        1,
+                                        3,
+                                        2
+                                    ],
+                                    "uv": [
+                                        6,
+                                        17
+                                    ]
+                                }
+                            ],
+                            "children": {}
+                        }
+                    }
                 }
             }
         }
