@@ -14,6 +14,14 @@ public class GliderEntityModel extends EntityModel<GliderRenderState> {
 	private final @Nullable ModelPart com;
 	private final @Nullable ModelPart cop;
 
+	private final ModelPart aileronLeft;
+	private final ModelPart aileronRight;
+
+	private final ModelPart elevatorLeft;
+	private final ModelPart elevatorRight;
+
+	private final ModelPart rudder;
+
 	protected GliderEntityModel(ModelPart root) {
 		super(root);
 
@@ -31,6 +39,16 @@ public class GliderEntityModel extends EntityModel<GliderRenderState> {
 
 		this.com = DEBUG ? com : null;
 		this.cop = DEBUG ? cop : null;
+
+		var fuselage = root.getChild("fuselage");
+
+		aileronLeft = fuselage.getChild("wing_left").getChild("aileron_left");
+		aileronRight = fuselage.getChild("wing_right").getChild("aileron_right");
+
+		elevatorLeft = fuselage.getChild("horizontal_stabilizer").getChild("elevator_left");
+		elevatorRight = fuselage.getChild("horizontal_stabilizer").getChild("elevator_right");
+
+		rudder = fuselage.getChild("vertical_stabilizer").getChild("rudder");
 	}
 
 	@Override
@@ -46,5 +64,13 @@ public class GliderEntityModel extends EntityModel<GliderRenderState> {
 			var centerOfPressure = new Vector3f(state.centerOfPressure).mul(16.0f).sub(0.5f, 0.5f, 0.5f);
 			cop.setOrigin(-centerOfPressure.x, -centerOfPressure.y, centerOfPressure.z);
 		}
+
+		aileronLeft.setAngles(state.aileronAngle, 0, 0);
+		aileronRight.setAngles(-state.aileronAngle, 0, 0);
+
+		elevatorLeft.setAngles(-state.elevatorAngle, 0, 0);
+		elevatorRight.setAngles(-state.elevatorAngle, 0, 0);
+
+		rudder.setAngles(0, state.rudderAngle, 0);
 	}
 }

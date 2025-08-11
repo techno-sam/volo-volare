@@ -14,6 +14,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 
+import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
+
 @Environment(EnvType.CLIENT)
 public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRenderState> {
 	private static final Identifier TEXTURE = Volare.id("textures/entity/glider/glider.png");
@@ -74,7 +76,9 @@ public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRen
 		state.centerOfMass = entity.getCenterOfMass();
 		state.centerOfPressure = entity.getCenterOfPressure();
 
-		state.propellerAngle = (entity.age + tickProgress) * 360.0f / 20.0f;
+		state.aileronAngle = entity.getAileronAngle(tickProgress) * RADIANS_PER_DEGREE;
+		state.elevatorAngle = entity.getElevatorAngle(tickProgress) * RADIANS_PER_DEGREE;
+		state.rudderAngle = entity.getRudderAngle(tickProgress) * RADIANS_PER_DEGREE;
 
 		state.damageWobbleTicks = entity.getDamageWobbleTicks() - tickProgress;
 		state.damageWobbleSide = entity.getDamageWobbleSide();

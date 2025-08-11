@@ -4,10 +4,10 @@ import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
 import io.github.slimeistdev.volare.network.VolarePackets;
-import io.github.slimeistdev.volare.network.c2s.RotationC2SPacket;
-import io.github.slimeistdev.volare.network.c2s.SetGliderPhysicsC2SPacket;
+import io.github.slimeistdev.volare.network.c2s.UpdateGliderC2SPacket;
 import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
 import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
+import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.ComponentsAccess;
@@ -58,6 +58,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	protected static final TrackedData<Quaternionf> QUAT_SERVER = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.QUATERNION_F);
 	protected static final TrackedData<List<ParticleEffect>> PARTICLES = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.PARTICLE_LIST);
+	protected static final TrackedData<Integer> PITCH_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	protected static final TrackedData<Integer> YAW_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, 3);
 	private final Supplier<Item> itemSupplier;
@@ -72,7 +74,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	private final Vector3fc wingtipOffset;
 
 	private int pitchControl = 0;
-	private int rollControl = 0;
+	private int yawControl = 0;
+
+	private final LerpedFloat aileronAngle = new LerpedFloat(5.0f);
+	private final LerpedFloat elevatorAngle = new LerpedFloat(5.0f);
+	private final LerpedFloat rudderAngle = new LerpedFloat(5.0f * 1.5f);
 
 	private boolean wasLogicalSideForUpdatingMovement = false;
 
@@ -146,6 +152,25 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		return new PhysicsSnapshot(rigidBody);
 	}
 
+	public void setControls(int pitchControl, int yawControl) {
+		this.pitchControl = pitchControl;
+		this.yawControl = yawControl;
+		dataTracker.set(PITCH_CONTROL, pitchControl);
+		dataTracker.set(YAW_CONTROL, yawControl);
+	}
+
+	public float getAileronAngle(float tickProgress) {
+		return aileronAngle.get(tickProgress);
+	}
+
+	public float getElevatorAngle(float tickProgress) {
+		return elevatorAngle.get(tickProgress);
+	}
+
+	public float getRudderAngle(float tickProgress) {
+		return rudderAngle.get(tickProgress);
+	}
+
 	public Vector3fc getCenterOfMass() {
 		return centerOfMass;
 	}
@@ -160,6 +185,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		builder.add(QUAT_SERVER, new Quaternionf());
 		builder.add(PARTICLES, List.of());
+		builder.add(PITCH_CONTROL, 0);
+		builder.add(YAW_CONTROL, 0);
 	}
 
 	@Override
@@ -167,11 +194,18 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		super.onTrackedDataSet(data);
 
 		if (getWorld().isClient) {
-			if (QUAT_SERVER.equals(data) && !isLogicalSideForUpdatingMovement()) {
-				updateTrackedPositionAndAngles$Quat(new Quaternionf(getQuat()));
-			}
 			if (PARTICLES.equals(data)) {
 				this.wingtipParticles = dataTracker.get(PARTICLES);
+			}
+
+			if (!isLogicalSideForUpdatingMovement()) {
+				if (QUAT_SERVER.equals(data)) {
+					updateTrackedPositionAndAngles$Quat(new Quaternionf(getQuat()));
+				} else if (PITCH_CONTROL.equals(data)) {
+					this.pitchControl = dataTracker.get(PITCH_CONTROL);
+				} else if (YAW_CONTROL.equals(data)) {
+					this.yawControl = dataTracker.get(YAW_CONTROL);
+				}
 			}
 		}
 	}
@@ -417,6 +451,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				scale.removeModifier(SCALE_MODIFIER);
 			}
 		}
+
+		setControls(0, 0);
 	}
 
 	@Override
@@ -461,8 +497,12 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			}
 
 			if (isClient) {
-				VolarePackets.PACKETS.send(new RotationC2SPacket(getQuatClient()));
-				VolarePackets.PACKETS.send(new SetGliderPhysicsC2SPacket(this));
+				VolarePackets.PACKETS.send(new UpdateGliderC2SPacket(
+					new Quaternionf(getQuatClient()),
+					createPhysicsSnapshot(),
+					pitchControl,
+					yawControl
+				));
 			}
 		} else {
 			this.setVelocity(Vec3d.ZERO);
@@ -478,6 +518,16 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		setPitch(euler.pitch());
 		setYaw(euler.yaw());
 		rigidBody.setOrientation(quat);
+
+		if (isClient) {
+			aileronAngle.setTarget(yawControl * 20.0f);
+			elevatorAngle.setTarget(pitchControl * 40.0f);
+			rudderAngle.setTarget(yawControl * 30.0f);
+
+			aileronAngle.tick();
+			elevatorAngle.tick();
+			rudderAngle.tick();
+		}
 
 		if (isClient && !wingtipParticles.isEmpty()) {
 			var lastPos = getLerpedPos(0.0f).toVector3f();
@@ -534,13 +584,13 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	private void updateControls() {
 		pitchControl = 0;
-		rollControl = 0;
+		yawControl = 0;
 
 		PlayerEntity player = getControllingPassenger();
 		if (player == null) return;
 
 		pitchControl = MathHelper.sign(player.forwardSpeed);
-		rollControl = MathHelper.sign(player.sidewaysSpeed);
+		yawControl = MathHelper.sign(player.sidewaysSpeed);
 	}
 
 	private Quaternionf physicsStep(Quaternionfc quat) {
@@ -556,7 +606,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		rigidBody.applyForceAtCoM(rigidBody.directionToLocal(scratch.set(0, -9.8f * rigidBody.mass / 20.0f, 0)));
 
 		// wings
-		wings.applyControls(pitchControl, rollControl);
+		wings.applyControls(pitchControl, yawControl);
 		float airDensity = isTouchingWater() ? 1.5159375f : 1.225f; // sea level standard atmosphere
 		boolean wingForcesApplied = wings.applyForcesTo(rigidBody, 1.0f / 20.0f, airDensity);
 

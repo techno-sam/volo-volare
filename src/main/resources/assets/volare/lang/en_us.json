@@ -1,5 +1,6 @@
 {
   "entity.volare.glider": "Glider",
+  "item.volare.glider": "Glider",
 
   "message.volare.network.version_mismatch": "Volare on the client uses a different network format than the server. You should use the same version of the mod on both sides."
 }

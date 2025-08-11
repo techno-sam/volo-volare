@@ -13,7 +13,9 @@ public class GliderRenderState extends EntityRenderState {
 	public Vector3fc centerOfMass;
 	public Vector3fc centerOfPressure;
 
-	public float propellerAngle;
+	public float aileronAngle;
+	public float elevatorAngle;
+	public float rudderAngle;
 
 	public int damageWobbleSide;
 	public float damageWobbleTicks;
