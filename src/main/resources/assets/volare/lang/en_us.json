@@ -2,5 +2,8 @@
   "entity.volare.glider": "Glider",
   "item.volare.glider": "Glider",
 
+  "tooltip.volare.frozen_motion.zero": "Frozen until ridden",
+  "tooltip.volare.frozen_motion": "Frozen motion: (%s, %s, %s)",
+
   "message.volare.network.version_mismatch": "Volare on the client uses a different network format than the server. You should use the same version of the mod on both sides."
 }

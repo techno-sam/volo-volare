@@ -1,6 +1,7 @@
 package io.github.slimeistdev.volare.content.glider;
 
 import io.github.slimeistdev.volare.Volare;
+import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
 import io.github.slimeistdev.volare.network.VolarePackets;
@@ -11,10 +12,12 @@ import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.ComponentsAccess;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -29,6 +32,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
@@ -36,6 +40,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -216,8 +221,20 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
-	public @Nullable ItemStack getPickBlockStack() {
-		return new ItemStack(asItem());
+	protected void killAndDropSelf(ServerWorld world, DamageSource damageSource) {
+		this.kill(world);
+		if (world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {
+			ItemStack itemStack = getPickBlockStack();
+			itemStack.set(DataComponentTypes.CUSTOM_NAME, this.getCustomName());
+			this.dropStack(world, itemStack);
+		}
+	}
+
+	@Override
+	public @NotNull ItemStack getPickBlockStack() {
+		ItemStack stack = new ItemStack(asItem());
+		stack.set(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(wingtipParticles));
+		return stack;
 	}
 
 	@Override

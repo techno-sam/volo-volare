@@ -3,7 +3,9 @@ package io.github.slimeistdev.volare.registry;
 import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.content.glider.components.GliderFrozenMotionComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
+import net.fabricmc.fabric.api.item.v1.ComponentTooltipAppenderRegistry;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
@@ -30,5 +32,7 @@ public class VolareDataComponentTypes {
 		return Registry.register(Registries.DATA_COMPONENT_TYPE, Volare.id(id), builderOperator.apply(ComponentType.builder()).build());
 	}
 
-	public static void init() {}
+	public static void init() {
+		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_FROZEN_MOTION);
+	}
 }
