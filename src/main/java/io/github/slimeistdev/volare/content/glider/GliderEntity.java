@@ -8,8 +8,11 @@ import io.github.slimeistdev.volare.network.VolarePackets;
 import io.github.slimeistdev.volare.network.c2s.UpdateGliderC2SPacket;
 import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
 import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
+import io.github.slimeistdev.volare.registry.VolareTags;
 import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CampfireBlock;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.ComponentsAccess;
 import net.minecraft.component.DataComponentTypes;
@@ -38,10 +41,13 @@ import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -50,6 +56,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
@@ -610,6 +617,85 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		yawControl = MathHelper.sign(player.sidewaysSpeed);
 	}
 
+	private static boolean isThermalSource(BlockState state) {
+		return state.isIn(VolareTags.THERMAL_SOURCE)
+			&& (!state.contains(CampfireBlock.LIT) || state.get(CampfireBlock.LIT));
+	}
+
+	private float getThermalSpeed() {
+		final int RANGE = 32; // todo make configurable
+		final float STRENGTH = 2.5f; // todo make configurable
+
+		var world = getWorld();
+		var chunk = world.getWorldChunk(getBlockPos());
+		int height = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, getBlockX(), getBlockZ());
+		int blockY = getBlockY();
+		float y = (float) getY();
+
+		// if we're below the heightmap, we have to search more
+		if (y < height) {
+			boolean found = false;
+
+			height = blockY;
+
+			int currentSection = chunk.getSectionIndex(blockY);
+			int minSection = chunk.getSectionIndex(blockY - RANGE);
+
+			int sectionX = getBlockX() & 15;
+			int sectionZ = getBlockZ() & 15;
+			int maxSectionY = blockY & 15;
+
+			boolean anyThermalSources = false;
+			for (int i = currentSection; i >= minSection; i--) {
+				if (chunk.getSection(i).hasAny(GliderEntity::isThermalSource)) {
+					anyThermalSources = true;
+					break;
+				}
+			}
+
+			if (!anyThermalSources)
+				return 0;
+
+			Predicate<BlockState> motionBlocking = Heightmap.Type.MOTION_BLOCKING.getBlockPredicate();
+
+			Outer: for (int i = currentSection; i >= minSection; i--) {
+				ChunkSection section = chunk.getSection(i);
+
+				for (int sectionY = maxSectionY; sectionY >= 0; sectionY--) {
+					BlockState state = section.getBlockState(sectionX, sectionY, sectionZ);
+
+					if (isThermalSource(state)) {
+						found = true;
+						break Outer;
+					}
+
+					if (motionBlocking.test(state)) {
+						break Outer;
+					}
+
+					height--;
+				}
+
+				maxSectionY = 15;
+			}
+
+			if (!found)
+				return 0;
+		} else {
+			if (y - height > RANGE)
+				return 0;
+
+			BlockPos topBlock = new BlockPos(getBlockX(), height, getBlockZ());
+			BlockState topState = chunk.getBlockState(topBlock);
+
+			if (!isThermalSource(topState))
+				return 0;
+		}
+
+		float delta = (y - height) / RANGE;
+		return (1 - (delta * delta)) * STRENGTH;
+	}
+
 	private Quaternionf physicsStep(Quaternionfc quat) {
 		Vector3f scratch = new Vector3f();
 
@@ -625,7 +711,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		// wings
 		wings.applyControls(pitchControl, yawControl);
 		float airDensity = isTouchingWater() ? 1.5159375f : 1.225f; // sea level standard atmosphere
-		boolean wingForcesApplied = wings.applyForcesTo(rigidBody, 1.0f / 20.0f, airDensity);
+		boolean wingForcesApplied = wings.applyForcesTo(rigidBody, 1.0f / 20.0f, airDensity, getThermalSpeed());
 
 		rigidBody.endStep(1.0f / 20.0f);
 

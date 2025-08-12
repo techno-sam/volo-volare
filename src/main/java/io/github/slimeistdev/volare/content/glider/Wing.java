@@ -84,10 +84,12 @@ public class Wing {
 	 * @param body the rigid body to apply forces to
 	 * @param dt time step
 	 * @param airDensity density in kg/m^3 of the air at the current altitude
+	 * @param thermalSpeed airspeed of rising thermals in m/s
 	 * @return whether forces were applied
 	 */
-	public boolean applyForcesTo(RigidBody body, float dt, float airDensity) {
+	public boolean applyForcesTo(RigidBody body, float dt, float airDensity, float thermalSpeed) {
 		Vector3f local_vel = body.velocityAtPoint(centerOfPressure);
+		local_vel.sub(body.directionToLocal(new Vector3f(0, thermalSpeed, 0))); // add upwards thermals
 
 		//float speed = local_vel.length(); // this provides lift when wing is perpendicular to the flow, which is bad
 		// https://wiki.flightgear.org/JSBSim_Aerodynamics

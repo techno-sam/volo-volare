@@ -8,14 +8,15 @@ public record GliderWings(Wing leftAileron, Wing rightAileron, Wing elevator, Wi
 	 * @param body the rigid body to apply forces to
 	 * @param dt time step
 	 * @param airDensity density in kg/m^3 of the air at the current altitude
+	 * @param thermalSpeed airspeed of rising thermals in m/s
 	 * @return whether any forces were applied
 	 */
-	public boolean applyForcesTo(RigidBody body, float dt, float airDensity) {
+	public boolean applyForcesTo(RigidBody body, float dt, float airDensity, float thermalSpeed) {
 		boolean any = false;
-		any |= leftAileron.applyForcesTo(body, dt, airDensity);
-		any |= rightAileron.applyForcesTo(body, dt, airDensity);
-		any |= elevator.applyForcesTo(body, dt, airDensity);
-		any |= rudder.applyForcesTo(body, dt, airDensity);
+		any |= leftAileron.applyForcesTo(body, dt, airDensity, thermalSpeed);
+		any |= rightAileron.applyForcesTo(body, dt, airDensity, thermalSpeed);
+		any |= elevator.applyForcesTo(body, dt, airDensity, thermalSpeed);
+		any |= rudder.applyForcesTo(body, dt, airDensity, thermalSpeed);
 		return any;
 	}
 

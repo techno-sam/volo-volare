@@ -2,6 +2,8 @@
   "entity.volare.glider": "Glider",
   "item.volare.glider": "Glider",
 
+  "tag.block.volare.thermal_source": "Thermal Source",
+
   "tooltip.volare.frozen_motion.zero": "Frozen until ridden",
   "tooltip.volare.frozen_motion": "Frozen motion: (%s, %s, %s)",
 
