@@ -9,6 +9,13 @@
   "mixins": [
   ],
   "client": [
+    "client.yacl.ControllerWidgetMixin",
+    "client.yacl.OptionListMixin",
+    "client.yacl.OptionListMixin$ListGroupSeparatorEntryMixin",
+    "client.yacl.OptionListMixin$OptionEntryMixin",
+    "client.yacl.YACLScreenMixin",
+    "client.yacl.YACLScreenMixin$CategoryTabMixin",
+    "client.yacl.YetAnotherConfigLibImplMixin"
   ],
   "server": [
   ],

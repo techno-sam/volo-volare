@@ -1,39 +1,43 @@
 {
-	"schemaVersion": 1,
-	"id": "${modId}",
-	"version": "${version}",
-	"name": "${modName}",
-	"description": "${modDescription}",
-	"authors": [
-		"${authors}"
-	],
-	"contributors": [
-		"${contributors}"
-	],
-	"contact": {
-		"homepage": "${homepage}",
-		"issues": "${issues}",
-		"sources": "${sources}"
-	},
-	"license": "${license}",
-	"icon": "assets/${modId}/icon.png",
-	"accessWidener": "${modId}.accesswidener",
-	"mixins": [
-		"${modId}.mixins.json"
-	],
-	"depends": {
-		"minecraft": ">=${mc}",
-		"fabricloader": ">=${fl}",
-		"fabric-api": ">=${fapi}"
-	},
-	"suggests": {
-	},
-	"entrypoints": {
-		"main": [
-			"io.github.slimeistdev.volare.Volare"
-		],
-		"client": [
-			"io.github.slimeistdev.volare.VolareClient"
-		]
-	}
+  "schemaVersion": 1,
+  "id": "${modId}",
+  "version": "${version}",
+  "name": "${modName}",
+  "description": "${modDescription}",
+  "authors": [
+    "${authors}"
+  ],
+  "contributors": [
+    "${contributors}"
+  ],
+  "contact": {
+    "homepage": "${homepage}",
+    "issues": "${issues}",
+    "sources": "${sources}"
+  },
+  "license": "${license}",
+  "icon": "assets/${modId}/icon.png",
+  "accessWidener": "${modId}.accesswidener",
+  "mixins": [
+    "${modId}.mixins.json"
+  ],
+  "depends": {
+    "minecraft": ">=${mc}",
+    "fabricloader": ">=${fl}",
+    "fabric-api": ">=${fapi}",
+    "yet_another_config_lib_v3": ">=${yacl}"
+  },
+  "suggests": {
+  },
+  "entrypoints": {
+    "main": [
+      "io.github.slimeistdev.volare.Volare"
+    ],
+    "client": [
+      "io.github.slimeistdev.volare.VolareClient"
+    ],
+    "modmenu": [
+      "io.github.slimeistdev.volare.compat.VolareModMenu"
+    ]
+  }
 }

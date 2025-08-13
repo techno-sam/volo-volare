@@ -7,5 +7,28 @@
   "tooltip.volare.frozen_motion.zero": "Frozen until ridden",
   "tooltip.volare.frozen_motion": "Frozen motion: (%s, %s, %s)",
 
-  "message.volare.network.version_mismatch": "Volare on the client uses a different network format than the server. You should use the same version of the mod on both sides."
+  "message.volare.network.version_mismatch": "Volare on the client uses a different network format than the server. You should use the same version of the mod on both sides.",
+
+  "text.config.volare.title": "Volare Configs",
+  "text.config.volare.client_title": "Volare Client Config",
+  "text.config.volare.server_title": "Volare Server Config",
+  "text.config.volare.server_title.disabled_tooltip": "Only Available In-Game",
+
+  "yacl3.config.volare:server_config.category.thermals": "Thermals",
+
+  "yacl3.config.volare:server_config.thermalsHeight": "Height",
+  "yacl3.config.volare:server_config.thermalsHeight.desc.1": "Vertical extent of thermals in blocks.",
+  "yacl3.config.volare:server_config.thermalsHeight.desc.2": "A value of 0 disables thermals.",
+  "yacl3.config.volare:server_config.thermalsHeight.fmt": "%s blocks",
+  "yacl3.config.volare:server_config.thermalsHeight.fmt.0": "Disabled",
+
+  "yacl3.config.volare:server_config.thermalsFullStrengthHeight": "Full Strength Height",
+  "yacl3.config.volare:server_config.thermalsFullStrengthHeight.desc": "Thermal strength is constant until this height, then follows inverse-squared falloff.",
+  "yacl3.config.volare:server_config.thermalsFullStrengthHeight.fmt": "%s blocks",
+
+  "yacl3.config.volare:server_config.thermalsStrength": "Strength",
+  "yacl3.config.volare:server_config.thermalsStrength.desc.1": "Thermal strength in blocks per second.",
+  "yacl3.config.volare:server_config.thermalsStrength.desc.2": "A value of 0 disables thermals.",
+  "yacl3.config.volare:server_config.thermalsStrength.fmt": "%s blocks/s",
+  "yacl3.config.volare:server_config.thermalsStrength.fmt.min": "Disabled"
 }

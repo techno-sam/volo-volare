@@ -1,9 +1,14 @@
 package io.github.slimeistdev.volare;
 
+import io.github.slimeistdev.volare.config.VolareServerConfig;
 import io.github.slimeistdev.volare.network.VolarePackets;
+import io.github.slimeistdev.volare.network.s2c.SetConfigS2CPacket;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +21,15 @@ public class Volare implements ModInitializer {
 	public void onInitialize() {
 		ModSetup.init();
 		VolarePackets.PACKETS.initCommon();
+
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			VolareServerConfig.get(server.getOverworld());
+		});
+
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			ServerPlayerEntity player = handler.getPlayer();
+			VolarePackets.PACKETS.sendTo(player, new SetConfigS2CPacket(VolareServerConfig.getHandler(player.getWorld())));
+		});
 	}
 
 	public static Identifier id(String path) {

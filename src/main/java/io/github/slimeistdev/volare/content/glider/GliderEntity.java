@@ -1,6 +1,7 @@
 package io.github.slimeistdev.volare.content.glider;
 
 import io.github.slimeistdev.volare.Volare;
+import io.github.slimeistdev.volare.config.VolareServerConfig;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
@@ -623,8 +624,13 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	private float getThermalSpeed() {
-		final int RANGE = 32; // todo make configurable
-		final float STRENGTH = 2.5f; // todo make configurable
+		var config = VolareServerConfig.get(getWorld());
+		final int RANGE = config.thermalsHeight;
+		final int FULL_STRENGTH_RANGE = Math.min(config.thermalsFullStrengthHeight, RANGE);
+		final float STRENGTH = config.thermalsStrength;
+
+		if (RANGE <= 0 || STRENGTH < 1e-6f)
+			return 0;
 
 		var world = getWorld();
 		var chunk = world.getWorldChunk(getBlockPos());
@@ -692,8 +698,13 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				return 0;
 		}
 
-		float delta = (y - height) / RANGE;
-		return (1 - (delta * delta)) * STRENGTH;
+		float delta = y - height;
+		if (delta < FULL_STRENGTH_RANGE) {
+			return STRENGTH;
+		} else {
+			delta /= (RANGE - FULL_STRENGTH_RANGE);
+			return STRENGTH * (1 - (delta * delta));
+		}
 	}
 
 	private Quaternionf physicsStep(Quaternionfc quat) {

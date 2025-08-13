@@ -6,6 +6,8 @@ plugins {
 	alias libs.plugins.minotaur
 }
 
+boolean inCI = System.getenv("GITHUB_RUN_NUMBER") != null
+
 version = "$modVersion+$branchName"
 base.archivesName = project.slug
 
@@ -17,11 +19,28 @@ repositories {
 		forRepository {
 			//noinspection ForeignDelegate
 			maven {
+				name 'Modrinth'
 				url "https://api.modrinth.com/maven"
 			}
 		}
 		filter {
 			includeGroup "maven.modrinth"
+		}
+	}
+	maven {
+		name 'Xander Maven'
+		url 'https://maven.isxander.dev/releases'
+	}
+	exclusiveContent {
+		forRepository {
+			//noinspection ForeignDelegate
+			maven {
+				name 'Terraformers'
+				url "https://maven.terraformersmc.com/"
+			}
+		}
+		filter {
+			includeGroup "com.terraformersmc"
 		}
 	}
 }
@@ -35,6 +54,14 @@ dependencies {
 
 	modImplementation libs.jsonem
 	include libs.jsonem
+
+	modApi libs.mm
+
+	modImplementation libs.yacl
+
+	if (!inCI) {
+		modRuntimeOnly libs.mm
+	}
 
 	include(implementation(annotationProcessor(libs.mixinextras.get())))
 }
@@ -55,6 +82,7 @@ processResources {
 		mc            : compatibleVersions.split(", ")[0],
 		fl            : libs.versions.fl.get(),
 		fapi          : libs.versions.fapi.get(),
+		yacl          : libs.versions.yacl.get(),
 	]
 	inputs.properties meta
 	filesMatching("*.mod.json") { expand(meta) }
@@ -105,5 +133,6 @@ modrinth {
 	syncBodyFrom = "<!--DO NOT EDIT MANUALLY: synced from gh readme-->\n" + rootProject.file("README.md").text
 	dependencies {
 		required.version "fabric-api", libs.versions.fapi.get()
+		required.version "yacl", libs.versions.yacl.get()
 	}
 }
