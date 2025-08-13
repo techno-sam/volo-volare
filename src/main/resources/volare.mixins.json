@@ -9,6 +9,9 @@
   "mixins": [
   ],
   "client": [
+    "client.CameraMixin",
+    "client.LivingEntityRendererMixin",
+    "client.LivingEntityRenderStateMixin",
     "client.yacl.ControllerWidgetMixin",
     "client.yacl.OptionListMixin",
     "client.yacl.OptionListMixin$ListGroupSeparatorEntryMixin",

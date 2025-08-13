@@ -3,7 +3,7 @@ package io.github.slimeistdev.volare.config;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.AutoGen;
-import dev.isxander.yacl3.config.v2.api.autogen.IntSlider;
+import dev.isxander.yacl3.config.v2.api.autogen.TickBox;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import io.github.slimeistdev.volare.Volare;
 import net.fabricmc.api.EnvType;
@@ -21,10 +21,15 @@ public class VolareClientConfig {
 			.build())
 		.build();
 
-	@SerialEntry
+	@SerialEntry(comment = "Do camera roll when riding a glider in first person.")
 	@AutoGen(category = "general")
-	@IntSlider(min = 0, max = 42, step = 1)
-	public int placeholder = 0;
+	@TickBox
+	public boolean rollCamera1stPerson = true;
+
+	@SerialEntry(comment = "Do camera roll when riding a glider in third person.")
+	@AutoGen(category = "general")
+	@TickBox
+	public boolean rollCamera3rdPerson = true;
 
 	@ApiStatus.Internal
 	public VolareClientConfig() {}

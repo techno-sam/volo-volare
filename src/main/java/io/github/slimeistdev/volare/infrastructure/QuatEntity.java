@@ -13,4 +13,6 @@ public interface QuatEntity {
 
 	void updateTrackedPositionAndAngles$Quat(Quaternionf quat);
 	void refreshPositionAndAngles$Quat(Quaternionf quat);
+
+	float getRoll(float tickProgress);
 }

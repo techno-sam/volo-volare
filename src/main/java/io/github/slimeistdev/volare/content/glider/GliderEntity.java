@@ -80,6 +80,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	private Quaternionf quatClient = new Quaternionf();
 	private Quaternionf lastQuatClient = new Quaternionf();
 
+	private float roll = 0.0f;
+	private float lastRoll = 0.0f;
+
 	private final RigidBody rigidBody;
 	private final GliderWings wings;
 	private final Vector3fc centerOfMass;
@@ -130,6 +133,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	public void initRotation(float pitch, float yaw, float roll) {
 		this.setPitch(pitch);
 		this.setYaw(yaw);
+		this.roll = roll;
 		this.refreshPositionAndAngles$Quat(new MathUtil.EulerAngles(yaw, pitch, roll).getQuat());
 	}
 
@@ -324,6 +328,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
+	public float getRoll(float tickProgress) {
+		return MathHelper.lerp(tickProgress, lastRoll, roll);
+	}
+
+	@Override
 	public void setQuatClient(Quaternionf quatClient) {
 		this.quatClient = quatClient;
 	}
@@ -389,6 +398,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	public void updateLastAngles() {
 		super.updateLastAngles();
 		this.lastQuatClient = new Quaternionf(getQuatClient());
+		this.lastRoll = roll;
 	}
 
 	@Override
@@ -406,21 +416,24 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		return getFirstPassenger() instanceof PlayerEntity player ? player : null;
 	}
 
-	protected void clampPassengerYaw(Entity entity) {
-		entity.setBodyYaw(this.getYaw());
-		float f = MathHelper.wrapDegrees(entity.getYaw() - this.getYaw());
+	protected void clampPassengerYaw(Entity passenger) {
+		passenger.setBodyYaw(this.getYaw());
+		float f = MathHelper.wrapDegrees(passenger.getYaw() - this.getYaw());
 		float g = MathHelper.clamp(f, -105.0F, 105.0F);
-		entity.lastYaw += g - f;
-		entity.setYaw(entity.getYaw() + g - f);
-		entity.setHeadYaw(entity.getYaw());
+		passenger.lastYaw += g - f;
+		passenger.setYaw(passenger.getYaw() + g - f);
+		passenger.setHeadYaw(passenger.getYaw());
 	}
 
 	@Override
-	protected void updatePassengerPosition(Entity entity, Entity.PositionUpdater moveFunction) {
-		super.updatePassengerPosition(entity, moveFunction);
-		//entity.setYRot(entity.getYRot() + this.deltaRotation);
-		//entity.setYHeadRot(entity.getYHeadRot() + this.deltaRotation);
-		this.clampPassengerYaw(entity);
+	protected void updatePassengerPosition(Entity passenger, Entity.PositionUpdater positionUpdater) {
+		super.updatePassengerPosition(passenger, positionUpdater);
+
+		float yawVelocity = MathHelper.wrapDegrees(getYaw() - lastYaw);
+		passenger.setYaw(passenger.getYaw() + yawVelocity);
+		passenger.setHeadYaw(passenger.getHeadYaw() + yawVelocity);
+
+		this.clampPassengerYaw(passenger);
 	}
 
 	@Override
@@ -485,6 +498,10 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		World world = getWorld();
 		boolean isClient = world.isClient;
 
+		// because Minecraft, in its infinite wisdom, decided that player-ridden entities should always :(
+		if (!world.getTickManager().shouldTick())
+			return;
+
 		this.updateLastAngles();
 
 		if (this.getDamageWobbleTicks() > 0) {
@@ -542,6 +559,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		var euler = MathUtil.toEuler(quat);
 		setPitch(euler.pitch());
 		setYaw(euler.yaw());
+		roll = euler.roll();
 		rigidBody.setOrientation(quat);
 
 		if (isClient) {
@@ -644,8 +662,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 			height = blockY;
 
-			int currentSection = chunk.getSectionIndex(blockY);
-			int minSection = chunk.getSectionIndex(blockY - RANGE);
+			int currentSection = Math.clamp(chunk.getSectionIndex(blockY), 0, chunk.getSectionArray().length - 1);
+			int minSection = Math.clamp(chunk.getSectionIndex(blockY - RANGE), 0, chunk.getSectionArray().length - 1);
 
 			int sectionX = getBlockX() & 15;
 			int sectionZ = getBlockZ() & 15;
@@ -747,9 +765,32 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				0,
 				MathHelper.clamp(euler.roll() * -0.1f, -10f, 10f) * RADIANS_PER_DEGREE
 			);
+			Vector3f newAngularVelocity = currentAngularVelocity.mul(0.8f, scratch)
+				.add(targetAngularVelocity.mul(0.2f));
+
+			boolean forceSet = false;
+			float forcedPitch = euler.pitch();
+			float forcedRoll = euler.roll();
+			if (Math.abs(euler.pitch()) < 0.1f && Math.abs(newAngularVelocity.x) < 0.1f) {
+				newAngularVelocity.x = 0;
+				forcedPitch = 0;
+				forceSet = true;
+			}
+			if (Math.abs(euler.roll()) < 0.1f && Math.abs(newAngularVelocity.z) < 0.1f) {
+				newAngularVelocity.z = 0;
+				forcedRoll = 0;
+				forceSet = true;
+			}
+			if (forceSet) {
+				rigidBody.setOrientation(new MathUtil.EulerAngles(
+					euler.yaw(),
+					forcedPitch,
+					forcedRoll
+				).getQuat());
+			}
+
 			rigidBody.setAngularVelocity(
-				currentAngularVelocity.mul(0.8f, scratch)
-					.add(targetAngularVelocity.mul(0.2f))
+				newAngularVelocity
 			);
 		}
 

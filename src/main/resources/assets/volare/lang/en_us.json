@@ -14,6 +14,14 @@
   "text.config.volare.server_title": "Volare Server Config",
   "text.config.volare.server_title.disabled_tooltip": "Only Available In-Game",
 
+  "yacl3.config.volare:client_config.category.general": "General",
+
+  "yacl3.config.volare:client_config.rollCamera1stPerson": "1st Person Camera Roll",
+  "yacl3.config.volare:client_config.rollCamera1stPerson.desc": "Do camera roll when riding a glider in first person view.",
+
+  "yacl3.config.volare:client_config.rollCamera3rdPerson": "3rd Person Camera Roll",
+  "yacl3.config.volare:client_config.rollCamera3rdPerson.desc": "Do camera roll when riding a glider in third person view.",
+
   "yacl3.config.volare:server_config.category.thermals": "Thermals",
 
   "yacl3.config.volare:server_config.thermalsHeight": "Height",
