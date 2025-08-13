@@ -121,8 +121,10 @@ public class Wing {
 		float cl = airfoil.getCl(alpha);
 		float cd = airfoil.getCd(alpha);
 
-		if (flapRatio > 0.0f/* && MathHelper.abs(cl) > 1e-6f*/) {
-			float delta_cl = flapRatioSqrt * airfoil.clMax * controlInput;
+		if (flapRatio > 0.0f) {
+			float f = local_vel.z >= 0 ? 1.0f : -1.0f;
+
+			float delta_cl = flapRatioSqrt * airfoil.clMax * controlInput * f;
 			cl += delta_cl;
 		}
 
