@@ -39,6 +39,7 @@ import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -114,6 +115,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	private @Nullable Vector3f frozenMotion;
 	private List<ParticleEffect> wingtipParticles = List.of();
+
+	private float lastHorizontalSpeed = 0.0f;
 
 	public static EntityType.EntityFactory<GliderEntity> create(Supplier<Item> itemSupplier) {
 		return (entityType, world) -> new GliderEntity(entityType, world, itemSupplier);
@@ -271,7 +274,28 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
+	public boolean handleFallDamage(double fallDistance, float damagePerDistance, DamageSource damageSource) {
+		if (!this.getType().isIn(EntityTypeTags.FALL_DAMAGE_IMMUNE)) {
+			this.handleFallDamageForPassengers(fallDistance, damagePerDistance, damageSource);
+
+			if (getWorld() instanceof ServerWorld serverWorld) {
+				double unsafeDistance = fallDistance - 3.0f;
+				float damage = (float) unsafeDistance * damagePerDistance;
+				if (damage > 0) {
+					killAndDropSelf(serverWorld, damageSource);
+				}
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	protected void killAndDropSelf(ServerWorld world, DamageSource damageSource) {
+		if (damageSource.isIn(VolareTags.EXPLODE_GLIDER)) {
+			explode();
+		}
+
 		this.kill(world);
 		if (world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {
 			ItemStack itemStack = getPickBlockStack();
@@ -613,6 +637,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		if (!isClient && AreaLibProxy.isInFlak(world, this)) {
 			explode();
+			discard();
 			return;
 		}
 
@@ -662,6 +687,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			}
 
 			if (isClient) {
+				rigidBody.setVelocity(getVelocity().toVector3f());
 				VolarePackets.PACKETS.send(new UpdateGliderC2SPacket(
 					new Quaternionf(getQuatClient()),
 					createPhysicsSnapshot(),
@@ -722,6 +748,33 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		}
 
 		pickUpPassengers();
+
+		this.fallDistance = Math.max(0.0f, -rigidBody.getVelocity().y() * 4.0f);
+
+		if (world instanceof ServerWorld serverWorld) {
+			for (Entity passenger : getPassengerList()) {
+				passenger.fallDistance = 0.0f;
+			}
+
+			float horizontalSpeed = new Vector3f(rigidBody.getVelocity()).mul(1, 0, 1).length();
+
+			if (!isRemoved()) {
+				float delta = lastHorizontalSpeed - horizontalSpeed;
+				float damage = delta * 10 - 3;
+
+				if (damage > 0) {
+					float passengerDamage = damage - 2.0f;
+
+					for (Entity passenger : getPassengerList()) {
+						passenger.damage(serverWorld, getDamageSources().flyIntoWall(), passengerDamage);
+					}
+
+					this.damage(serverWorld, getDamageSources().flyIntoWall(), damage);
+				}
+			}
+
+			lastHorizontalSpeed = horizontalSpeed;
+		}
 	}
 
 	protected void explode() {
@@ -740,7 +793,6 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				false,
 				World.ExplosionSourceType.NONE
 			);
-			discard();
 		}
 	}
 

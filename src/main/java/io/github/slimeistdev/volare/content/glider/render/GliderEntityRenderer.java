@@ -11,6 +11,7 @@ import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 
@@ -25,6 +26,11 @@ public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRen
 	public GliderEntityRenderer(EntityRendererFactory.Context context) {
 		super(context);
 		this.model = new GliderEntityModel(context.getPart(VolareEntityRenderers.GLIDER_LAYER));
+	}
+
+	@Override
+	protected Box getBoundingBox(GliderEntity entity) {
+		return super.getBoundingBox(entity).expand(0.75, 0, 0.75);
 	}
 
 	@Override
