@@ -87,6 +87,9 @@ processResources {
 	inputs.properties meta
 	filesMatching("*.mod.json") { expand(meta) }
 	filesMatching("META-INF/*mods.toml") { expand(meta) }
+
+	// don't add development or to-do files into built jar
+	exclude("**/*.bbmodel", "**/*.lnk", "**/*.xcf", "**/*.blend", "**/*.blend1")
 }
 
 loom {
