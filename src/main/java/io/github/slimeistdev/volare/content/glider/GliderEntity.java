@@ -250,7 +250,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		if (!config.isBoostEnabled())
 			return;
 
-		setThrustTicks(getThrustTicks() + config.boostTicks);
+		setThrustTicks(config.boostTicks);
 		getWorld().playSoundFromEntity(
 			null,
 			this,
@@ -687,7 +687,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			}
 
 			if (isClient) {
-				rigidBody.setVelocity(getVelocity().toVector3f());
+				rigidBody.setVelocity(getVelocity().toVector3f().mul(1, 1, -1));
 				VolarePackets.PACKETS.send(new UpdateGliderC2SPacket(
 					new Quaternionf(getQuatClient()),
 					createPhysicsSnapshot(),
@@ -721,14 +721,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			rudderAngle.tick();
 		}
 
-		if (isClient && !wingtipParticles.isEmpty()) {
+		if (isClient) {
 			var lastPos = getLerpedPos(0.0f).toVector3f();
 			var pos = getLerpedPos(1.0f).toVector3f();
 			var vel = pos.sub(lastPos, lastPos);
 			pos.sub(vel.mul(0.5f));
 			float speed = vel.length();
 
-			if (random.nextFloat() * (speed + 0.2) > 0.2f) {
+			if (!wingtipParticles.isEmpty() && random.nextFloat() * (speed + 0.2) > 0.2f) {
 				Vector3f rightWingtipOffset = rigidBody.directionToGlobal(new Vector3f(wingtipOffset).add(centerOfMass)).mul(1, 1, -1);
 				Vector3f leftWingtipOffset = rigidBody.directionToGlobal(new Vector3f(wingtipOffset).mul(-1, 1, 1).add(centerOfMass)).mul(1, 1, -1);
 
@@ -744,6 +744,16 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 					world.addParticleClient(particle, rightWingtipOffset.x + oX, rightWingtipOffset.y + oY, rightWingtipOffset.z + oZ, oX, oY, oZ);
 					world.addParticleClient(particle, leftWingtipOffset.x + oX, leftWingtipOffset.y + oY, leftWingtipOffset.z + oZ, oX, oY, oZ);
 				}
+
+				if (thrustTicks > 0) {
+					Vector3f tailOffset = rigidBody.directionToGlobal(new Vector3f(0, 1, -29).div(16).add(centerOfMass)).mul(1, 1, -1);
+					tailOffset.add(pos);
+
+					float oX = (random.nextFloat() - 0.5f) * 0.125f;
+					float oY = (random.nextFloat() - 0.5f) * 0.125f;
+					float oZ = (random.nextFloat() - 0.5f) * 0.125f;
+					world.addParticleClient(ParticleTypes.FLAME, tailOffset.x + oX, tailOffset.y + oY, tailOffset.z + oZ, oX, oY, oZ);
+				}
 			}
 		}
 
@@ -751,14 +761,23 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		this.fallDistance = Math.max(0.0f, -rigidBody.getVelocity().y() * 4.0f);
 
-		if (world instanceof ServerWorld serverWorld) {
+		if (world instanceof ServerWorld serverWorld && !isRemoved()) {
 			for (Entity passenger : getPassengerList()) {
 				passenger.fallDistance = 0.0f;
 			}
 
-			float horizontalSpeed = new Vector3f(rigidBody.getVelocity()).mul(1, 0, 1).length();
+			float vx = rigidBody.getVelocity().x();
+			float vz = -rigidBody.getVelocity().z();
+			float horizontalSpeed = MathHelper.sqrt(org.joml.Math.fma(vx, vx, vz * vz));
 
-			if (!isRemoved()) {
+			boolean doCollision;
+			if (isLogicalSideForUpdatingMovement()) {
+				doCollision = horizontalCollision;
+			} else {
+				doCollision = MathHelper.abs(vx) < 1e-3 || MathHelper.abs(vz) < 1e-3;
+			}
+
+			if (doCollision) {
 				float delta = lastHorizontalSpeed - horizontalSpeed;
 				float damage = delta * 10 - 3;
 
@@ -793,6 +812,12 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				false,
 				World.ExplosionSourceType.NONE
 			);
+
+			for (ParticleEffect particle : wingtipParticles) {
+				float offset = 1.0f;
+
+				serverWorld.spawnParticles(particle, getX(), getY(), getZ(), 32, offset, offset, offset, 0.5);
+			}
 		}
 	}
 

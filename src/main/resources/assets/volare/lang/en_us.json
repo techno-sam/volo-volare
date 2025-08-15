@@ -36,7 +36,7 @@
   "yacl3.config.volare:server_config.category.boost": "Boosts",
 
   "yacl3.config.volare:server_config.boostTicks": "Duration",
-  "yacl3.config.volare:server_config.boostTicks.desc": "Time added to boost per boost item consumed.",
+  "yacl3.config.volare:server_config.boostTicks.desc": "Time to set to boost to when boost item consumed.",
   "yacl3.config.volare:server_config.boostTicks.fmt": "%s ticks",
   "yacl3.config.volare:server_config.boostTicks.fmt.0": "Disabled",
 
