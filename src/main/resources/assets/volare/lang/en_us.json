@@ -11,6 +11,13 @@
   "tooltip.volare.frozen_motion.zero": "Frozen until ridden",
   "tooltip.volare.frozen_motion": "Frozen motion: (%s, %s, %s)",
 
+  "commands.volare.area.flak.added": "Added FLAK to area %s",
+  "commands.volare.area.flak.removed": "Removed FLAK from area %s",
+
+  "commands.volare.area.thermal.set.absolute": "Set absolute thermal strength for area %s to %s blocks/s",
+  "commands.volare.area.thermal.set.relative": "Set relative thermal strength for area %s to %s",
+  "commands.volare.area.thermal.removed": "Removed thermal from area %s",
+
   "message.volare.network.version_mismatch": "Volare on the client uses a different network format than the server. You should use the same version of the mod on both sides.",
 
   "text.config.volare.title": "Volare Configs",

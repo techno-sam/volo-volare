@@ -1,9 +1,7 @@
 package io.github.slimeistdev.volare;
 
-import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
-import io.github.slimeistdev.volare.registry.VolareEntities;
-import io.github.slimeistdev.volare.registry.VolareItems;
-import io.github.slimeistdev.volare.registry.VolareSoundEvents;
+import io.github.slimeistdev.volare.compat.area_lib.AreaLibProxy;
+import io.github.slimeistdev.volare.registry.*;
 
 public class ModSetup {
 	public static void init() {
@@ -11,5 +9,7 @@ public class ModSetup {
 		VolareEntities.init();
 		VolareItems.init();
 		VolareSoundEvents.init();
+		AreaLibProxy.init();
+		VolareCommands.init();
 	}
 }

@@ -10,6 +10,7 @@ mixinextras = "0.5.0"
 jsonem = "0.3+1.21.8"
 yacl = "3.7.1+1.21.6-fabric"
 mm = "15.0.0-beta.3"
+arealib = "0.3.6+1.21.8"
 
 [plugins]
 loom = { id = "fabric-loom", version.ref = "loom" }
@@ -24,3 +25,4 @@ mixinextras = { group = "io.github.llamalad7", name = "mixinextras-fabric", vers
 jsonem = { group = "maven.modrinth", name = "jsonem", version.ref = "jsonem" }
 yacl = { group = "dev.isxander", name = "yet-another-config-lib", version.ref = "yacl" }
 mm = { group = "com.terraformersmc", name = "modmenu", version.ref = "mm" }
+arealib = { group = "maven.modrinth", name = "area_lib", version.ref = "arealib" }

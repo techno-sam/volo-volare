@@ -1,6 +1,7 @@
 package io.github.slimeistdev.volare.content.glider;
 
 import io.github.slimeistdev.volare.Volare;
+import io.github.slimeistdev.volare.compat.area_lib.AreaLibProxy;
 import io.github.slimeistdev.volare.config.VolareServerConfig;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
@@ -53,6 +54,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.explosion.AdvancedExplosionBehavior;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -61,6 +63,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -608,6 +611,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		World world = getWorld();
 		boolean isClient = world.isClient;
 
+		if (!isClient && AreaLibProxy.isInFlak(world, this)) {
+			explode();
+			return;
+		}
+
 		// because Minecraft, in its infinite wisdom, decided that player-ridden entities should always :(
 		if (!world.getTickManager().shouldTick())
 			return;
@@ -716,6 +724,26 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		pickUpPassengers();
 	}
 
+	protected void explode() {
+		if (getWorld() instanceof ServerWorld serverWorld) {
+			serverWorld.createExplosion(
+				this,
+				null,
+				new AdvancedExplosionBehavior(
+					false,
+					false,
+					Optional.empty(),
+					Optional.empty()
+				),
+				getX(), getY(), getZ(),
+				4.0f,
+				false,
+				World.ExplosionSourceType.NONE
+			);
+			discard();
+		}
+	}
+
 	@Override
 	@SuppressWarnings("RedundantMethodOverride")
 	protected double getGravity() {
@@ -768,6 +796,12 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			return 0;
 
 		var world = getWorld();
+
+		Float areaLibStrength = AreaLibProxy.getThermalStrength(world, this, STRENGTH);
+		if (areaLibStrength != null) {
+			return areaLibStrength;
+		}
+
 		var chunk = world.getWorldChunk(getBlockPos());
 		int height = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, getBlockX(), getBlockZ());
 		int blockY = getBlockY();

@@ -63,6 +63,12 @@ dependencies {
 		modRuntimeOnly libs.mm
 	}
 
+	modCompileOnly libs.arealib
+
+	if (!inCI && enable_arealib.toBoolean()) {
+		modRuntimeOnly libs.arealib
+	}
+
 	include(implementation(annotationProcessor(libs.mixinextras.get())))
 }
 
@@ -138,5 +144,6 @@ modrinth {
 	dependencies {
 		required.version "fabric-api", libs.versions.fapi.get()
 		required.version "yacl", libs.versions.yacl.get()
+		optional.version "area_lib", libs.versions.arealib.get()
 	}
 }
