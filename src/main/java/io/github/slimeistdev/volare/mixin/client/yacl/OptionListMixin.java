@@ -63,7 +63,7 @@ public class OptionListMixin {
 			return volare$makeUnavailable(instance, original);
 		}
 
-		@WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Ldev/isxander/yacl3/api/ListOption;available()Z"))
+		@WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Ldev/isxander/yacl3/api/ListOption;available()Z", remap = false))
 		private boolean makeUnavailable(ListOption<?> instance, Operation<Boolean> original) {
 			return volare$makeUnavailable(instance, original);
 		}

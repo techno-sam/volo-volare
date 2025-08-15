@@ -11,7 +11,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,13 +27,6 @@ public class CameraMixin {
 	private float lastCameraY;
 	@Shadow
 	private float cameraY;
-	@Shadow
-	@Final
-	private Quaternionf rotation;
-	@Shadow
-	private float yaw;
-	@Shadow
-	private float pitch;
 
 	@Unique
 	private MathUtil.EulerAngles volare$eulerAngles;
@@ -97,7 +89,7 @@ public class CameraMixin {
 		original.call(instance, x, y, z);
 	}
 
-	@WrapOperation(method = "setRotation", at = @At(value = "INVOKE", target = "Lorg/joml/Quaternionf;rotationYXZ(FFF)Lorg/joml/Quaternionf;"))
+	@WrapOperation(method = "setRotation", at = @At(value = "INVOKE", target = "Lorg/joml/Quaternionf;rotationYXZ(FFF)Lorg/joml/Quaternionf;", remap = false))
 	private Quaternionf applyRoll(Quaternionf instance, float angleY, float angleX, float angleZ, Operation<Quaternionf> original) {
 		// application order:
 		// vehicle yaw, pitch, roll

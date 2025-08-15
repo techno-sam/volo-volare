@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 
 @Mixin(YACLScreen.class)
 public class YACLScreenMixin {
-	@Shadow
+	@Shadow(remap = false)
 	@Final
 	public YetAnotherConfigLib config;
 

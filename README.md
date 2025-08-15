@@ -1,9 +1,11 @@
-<!--suppress HtmlDeprecatedTag, XmlDeprecatedElement -->
-<center><img alt="mod icon" src="https://raw.githubusercontent.com/techno-sam/volo-volare/refs/heads/fabric-1.21.8/dev/src/main/resources/assets/volare/icon.png" width="128"/></center>
+<!--suppress HtmlDeprecatedTag, XmlDeprecatedElement, HtmlDeprecatedAttribute -->
+<p align="center">
+<img alt="mod icon" src="https://raw.githubusercontent.com/techno-sam/volo-volare/refs/heads/fabric-1.21.8/dev/src/main/resources/assets/volare/icon.png" width="128"/>
+</p>
 
-<center>
+<p align="center">
 Step into a model glider and soar into a world of wonder.
-</center>
+</p>
 
 ---
 
