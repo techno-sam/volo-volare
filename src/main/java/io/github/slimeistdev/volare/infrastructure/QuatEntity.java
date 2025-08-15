@@ -15,4 +15,9 @@ public interface QuatEntity {
 	void refreshPositionAndAngles$Quat(Quaternionf quat);
 
 	float getRoll(float tickProgress);
+
+	interface RenderState {
+		Quaternionfc getQuat();
+		void setQuat(Quaternionfc quat);
+	}
 }

@@ -10,6 +10,7 @@
   ],
   "client": [
     "client.CameraMixin",
+    "client.InGameHudMixin",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityRenderStateMixin",
     "client.yacl.ControllerWidgetMixin",
