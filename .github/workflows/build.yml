@@ -71,10 +71,23 @@ jobs:
           files: 'build/libs/*.jar;!build/libs/*-sources.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # set modrinth release type if tag matches v#.#.#-(alpha|beta).*
+      - name: Detect Release Type
+        id: detect-release-type
+        run: |
+          if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-alpha\. ]]; then
+              echo "type=alpha" >> $GITHUB_OUTPUT
+          elif [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-beta\. ]]; then
+              echo "type=beta" >> $GITHUB_OUTPUT
+          else
+              echo "type=release" >> $GITHUB_OUTPUT
+          fi
+
       - name: Modrinth Publish
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           CHANGELOG: ${{ github.event.release.body }}
+          RELEASE_TYPE: ${{ steps.detect-release-type.outputs.type }}
         if: ${{ github.event_name == 'release' && github.event.action == 'published' && env.MODRINTH_TOKEN != '' }}
         run: |
           ./gradlew --no-configuration-cache modrinth
