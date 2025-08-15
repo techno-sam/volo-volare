@@ -26,6 +26,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.CreakingEntity;
+import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.item.Item;
@@ -35,6 +37,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -447,7 +450,10 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	@Override
 	protected void updatePassengerPosition(Entity passenger, Entity.PositionUpdater positionUpdater) {
-		super.updatePassengerPosition(passenger, positionUpdater);
+		Vector3f passengerOffset = getUnrotatedPassengerAttachmentPos(passenger);
+		passengerOffset.sub(passenger.getVehicleAttachmentPos(this).toVector3f());
+		passengerOffset = rotateAttachmentPos(passengerOffset);
+		positionUpdater.accept(passenger, passengerOffset.x + getX(), passengerOffset.y + getY(), passengerOffset.z + getZ());
 
 		float yawVelocity = MathHelper.wrapDegrees(getYaw() - lastYaw);
 		passenger.setYaw(passenger.getYaw() + yawVelocity);
@@ -456,8 +462,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.clampPassengerYaw(passenger);
 	}
 
-	@Override
-	protected Vec3d getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+	protected Vector3f getUnrotatedPassengerAttachmentPos(Entity passenger) {
 		float xOffset = 0;
 		if (getPassengerList().size() > 1) {
 			int i = getPassengerList().indexOf(passenger);
@@ -468,14 +473,25 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			}
 		}
 
+		return new Vector3f(xOffset, 2.5f, 3)
+			.div(16f);
+	}
+
+	private Vector3f rotateAttachmentPos(Vector3f pos) {
+		return rotateAttachmentPos(pos, pos);
+	}
+
+	private Vector3f rotateAttachmentPos(Vector3fc pos, Vector3f scratch) {
 		var flippedCoM = new Vector3f(centerOfMass).mul(1, 1, 0);
-		return new Vec3d(
-			rigidBody.directionToGlobal(
-				new Vector3f(xOffset, 2.5f, 3)
-					.div(16f)
-					.sub(flippedCoM)
-			).mul(1, 1, -1).add(flippedCoM)
-		);
+
+		return rigidBody.directionToGlobal(pos.sub(flippedCoM, scratch), scratch)
+			.mul(1, 1, -1)
+			.add(flippedCoM);
+	}
+
+	@Override
+	protected Vec3d getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+		return new Vec3d(rotateAttachmentPos(getUnrotatedPassengerAttachmentPos(passenger)));
 	}
 
 	@Override
@@ -483,9 +499,13 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.clampPassengerYaw(entity);
 	}
 
+	protected int getMaxPassengers() {
+		return 5;
+	}
+
 	@Override
 	protected boolean canAddPassenger(Entity passenger) {
-		return getPassengerList().size() < 5;
+		return getPassengerList().size() < getMaxPassengers();
 	}
 
 	@Override
@@ -555,8 +575,36 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		setControls(0, 0);
 	}
 
+	public boolean isSmallerThanBoat(Entity entity) {
+		return entity.getWidth() < this.getWidth();
+	}
+
+	protected void pickUpPassengers() {
+		List<Entity> list = this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(0.2F, -0.01F, 0.2F), EntityPredicates.canBePushedBy(this));
+		if (!list.isEmpty()) {
+			boolean bl = !this.getWorld().isClient && !(this.getControllingPassenger() instanceof PlayerEntity);
+
+			for (Entity entity : list) {
+				if (!entity.hasPassenger(this)) {
+					if (bl
+						&& this.getPassengerList().size() < this.getMaxPassengers()
+						&& !entity.hasVehicle()
+						&& this.isSmallerThanBoat(entity)
+						&& entity instanceof LivingEntity
+						&& !(entity instanceof WaterCreatureEntity)
+						&& !(entity instanceof PlayerEntity)
+						&& !(entity instanceof CreakingEntity)) {
+						entity.startRiding(this);
+					} else {
+						this.pushAwayFrom(entity);
+					}
+				}
+			}
+		}
+	}
+
 	@Override
-	public void tick() { // todo pick up entities (boat-like)
+	public void tick() {
 		World world = getWorld();
 		boolean isClient = world.isClient;
 
@@ -664,6 +712,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				}
 			}
 		}
+
+		pickUpPassengers();
 	}
 
 	@Override
