@@ -1,0 +1,8 @@
+{
+  "entity.glider.boost": {
+    "sounds": [
+      "minecraft:mob/ghast/fireball4"
+    ],
+    "subtitle": "subtitles.volare.entity.glider.boost"
+  }
+}

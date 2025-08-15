@@ -39,6 +39,21 @@ public class VolareServerConfig {
 	@Nullable
 	private static WeakReference<MinecraftServer> CURRENT_SERVER = null;
 
+	@SerialEntry(comment = "Boost duration in ticks. A value of 0 disables boosting.")
+	@AutoGen(category = "boost")
+	@IntSlider(min = 0, max = 200, step = 10)
+	public int boostTicks = 60;
+
+	@SerialEntry(comment = "Maximum boosted speed in blocks per second. A value of 0 disables boosting.")
+	@AutoGen(category = "boost")
+	@FloatSlider(min = 0.0f, max = 4.0f, step = 0.125f)
+	public float boostMaxSpeed = 2.0f;
+
+	@SerialEntry(comment = "Boost force in newtons. A value of 0 disables boosting.")
+	@AutoGen(category = "boost")
+	@FloatSlider(min = 0.0f, max = 2.0f, step = 0.125f)
+	public float boostForce = 0.5f;
+
 	@SerialEntry(comment = "Vertical extent of thermals in blocks. A value of 0 disables thermals.")
 	@AutoGen(category = "thermals")
 	@IntSlider(min = 0, max = 128, step = 1)
@@ -56,6 +71,10 @@ public class VolareServerConfig {
 
 	@ApiStatus.Internal
 	public VolareServerConfig() {}
+
+	public boolean isBoostEnabled() {
+		return boostTicks > 0 && boostMaxSpeed > 0.0f && boostForce > 0.0f;
+	}
 
 	public static VolareServerConfig get(World world) {
 		return getHandler(world).instance();

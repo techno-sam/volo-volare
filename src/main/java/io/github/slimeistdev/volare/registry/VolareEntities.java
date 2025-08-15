@@ -14,8 +14,8 @@ public class VolareEntities {
 		"glider",
 		EntityType.Builder.create(GliderEntity.create(() -> VolareItems.GLIDER), SpawnGroup.MISC)
 			.dropsNothing()
-			.dimensions(1.375F, 0.5625F)
-			.eyeHeight(0.5625F)
+			.dimensions(1.375f, 0.25f)
+			.eyeHeight(0.25f)
 			.maxTrackingRange(10)
 	);
 

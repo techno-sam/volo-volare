@@ -1,5 +1,8 @@
 {
+  "itemGroup.volare.main": "Volo Volare",
+
   "entity.volare.glider": "Glider",
+  "subtitles.volare.entity.glider.boost": "Glider Boosts",
   "item.volare.glider": "Glider",
 
   "tag.block.volare.thermal_source": "Thermal Source",
@@ -21,6 +24,23 @@
 
   "yacl3.config.volare:client_config.rollCamera3rdPerson": "3rd Person Camera Roll",
   "yacl3.config.volare:client_config.rollCamera3rdPerson.desc": "Do camera roll when riding a glider in third person view.",
+
+  "yacl3.config.volare:server_config.category.boost": "Boosts",
+
+  "yacl3.config.volare:server_config.boostTicks": "Duration",
+  "yacl3.config.volare:server_config.boostTicks.desc": "Time added to boost per boost item consumed.",
+  "yacl3.config.volare:server_config.boostTicks.fmt": "%s ticks",
+  "yacl3.config.volare:server_config.boostTicks.fmt.0": "Disabled",
+
+  "yacl3.config.volare:server_config.boostMaxSpeed": "Max Speed",
+  "yacl3.config.volare:server_config.boostMaxSpeed.desc": "Maximum speed accelerated to by boost thrust.",
+  "yacl3.config.volare:server_config.boostMaxSpeed.fmt": "%s blocks/s",
+  "yacl3.config.volare:server_config.boostMaxSpeed.fmt.min": "Disabled",
+
+  "yacl3.config.volare:server_config.boostForce": "Force",
+  "yacl3.config.volare:server_config.boostForce.desc": "Force applied by boost thrust.",
+  "yacl3.config.volare:server_config.boostForce.fmt": "%s N",
+  "yacl3.config.volare:server_config.boostForce.fmt.min": "Disabled",
 
   "yacl3.config.volare:server_config.category.thermals": "Thermals",
 

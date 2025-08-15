@@ -9,6 +9,7 @@ import io.github.slimeistdev.volare.network.VolarePackets;
 import io.github.slimeistdev.volare.network.c2s.UpdateGliderC2SPacket;
 import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
 import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
+import io.github.slimeistdev.volare.registry.VolareSoundEvents;
 import io.github.slimeistdev.volare.registry.VolareTags;
 import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
@@ -65,14 +66,21 @@ import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
 public class GliderEntity extends VehicleEntity implements QuatEntity {
 	private static final EntityAttributeModifier SCALE_MODIFIER = new EntityAttributeModifier(
 		Volare.id("glider_scale"),
-		0.125 - 1,
+		(1 / 4.0) - 1,
 		EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
 	);
+	private static final EntityAttributeModifier CAMERA_DISTANCE_MODIFIER = new EntityAttributeModifier(
+		Volare.id("glider_camera_distance"),
+		4.0 - 1,
+		EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+	);
+
 
 	protected static final TrackedData<Quaternionf> QUAT_SERVER = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.QUATERNION_F);
 	protected static final TrackedData<List<ParticleEffect>> PARTICLES = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.PARTICLE_LIST);
 	protected static final TrackedData<Integer> PITCH_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<Integer> YAW_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	protected static final TrackedData<Integer> THRUST_TICKS = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, 3);
 	private final Supplier<Item> itemSupplier;
@@ -204,6 +212,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		builder.add(PARTICLES, List.of());
 		builder.add(PITCH_CONTROL, 0);
 		builder.add(YAW_CONTROL, 0);
+		builder.add(THRUST_TICKS, 0);
 	}
 
 	@Override
@@ -225,6 +234,29 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				}
 			}
 		}
+	}
+
+	public void boostThrust() {
+		var config = VolareServerConfig.get(getWorld());
+		if (!config.isBoostEnabled())
+			return;
+
+		setThrustTicks(getThrustTicks() + config.boostTicks);
+		getWorld().playSoundFromEntity(
+			null,
+			this,
+			VolareSoundEvents.GLIDER_BOOST,
+			getSoundCategory(),
+			1.0f, 0.8F + 0.4F * this.random.nextFloat()
+		);
+	}
+
+	private void setThrustTicks(int ticks) {
+		dataTracker.set(THRUST_TICKS, ticks);
+	}
+
+	private int getThrustTicks() {
+		return dataTracker.get(THRUST_TICKS);
 	}
 
 	@Override
@@ -256,6 +288,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		frozenMotion = view.read("FrozenMotion", Codecs.VECTOR_3F).orElse(null);
 		setWingtipParticles(view.read("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf()).orElse(List.of()));
+
+		setThrustTicks(view.getInt("ThrustTicks", 0));
 	}
 
 	@Override
@@ -268,6 +302,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		if (!wingtipParticles.isEmpty()) {
 			view.put("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf(), wingtipParticles);
+		}
+
+		int thrustTicks = getThrustTicks();
+		if (thrustTicks > 0) {
+			view.putInt("ThrustTicks", thrustTicks);
 		}
 	}
 
@@ -287,25 +326,6 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	public @Nullable PositionInterpolator getInterpolator() {
 		return interpolator;
 	}
-
-	/*@Override
-	public float getRoll() {
-		return roll;
-	}
-
-	@Override
-	public float getRoll(float tickProgress) {
-		return tickProgress == 1.0f ? getRoll() : MathHelper.lerp(tickProgress, lastRoll, getRoll());
-	}
-
-	@Override
-	public void setRoll(float roll) {
-		if (!Float.isFinite(roll)) {
-			Util.logErrorOrPause("Invalid entity rotation: " + roll + ", discarding.");
-		} else {
-			this.roll = roll;
-		}
-	}*/
 
 	@Override
 	public Quaternionfc getQuat() {
@@ -437,8 +457,35 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
+	protected Vec3d getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+		float xOffset = 0;
+		if (getPassengerList().size() > 1) {
+			int i = getPassengerList().indexOf(passenger);
+			if (i != 0) {
+				int side = i % 2 == 0 ? -1 : 1;
+				int distance = (i + 1) / 2;
+				xOffset = side * distance * 5;
+			}
+		}
+
+		var flippedCoM = new Vector3f(centerOfMass).mul(1, 1, 0);
+		return new Vec3d(
+			rigidBody.directionToGlobal(
+				new Vector3f(xOffset, 2.5f, 3)
+					.div(16f)
+					.sub(flippedCoM)
+			).mul(1, 1, -1).add(flippedCoM)
+		);
+	}
+
+	@Override
 	public void onPassengerLookAround(Entity entity) {
 		this.clampPassengerYaw(entity);
+	}
+
+	@Override
+	protected boolean canAddPassenger(Entity passenger) {
+		return getPassengerList().size() < 5;
 	}
 
 	@Override
@@ -452,9 +499,16 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		if (this.getWorld().isClient)
 			return ActionResult.SUCCESS;
 
-		return player.startRiding(this)
-			? ActionResult.SUCCESS
-			: ActionResult.PASS;
+		if (player.startRiding(this))
+			return ActionResult.SUCCESS;
+
+		ItemStack stack = player.getStackInHand(hand);
+		if (stack.isIn(VolareTags.THRUST_SOURCE)) {
+			stack.decrementUnlessCreative(1, player);
+			return ActionResult.SUCCESS;
+		}
+
+		return ActionResult.PASS;
 	}
 
 	@Override
@@ -471,10 +525,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			VolarePackets.PACKETS.sendTo(serverPlayer, new SetGliderPhysicsS2CPacket(this));
 		}
 
-		if (passenger instanceof LivingEntity living && false) {
+		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
+			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);
 			if (scale != null && !scale.hasModifier(SCALE_MODIFIER.id())) {
 				scale.addTemporaryModifier(SCALE_MODIFIER);
+			}
+			if (cameraDistance != null && !cameraDistance.hasModifier(CAMERA_DISTANCE_MODIFIER.id())) {
+				cameraDistance.addTemporaryModifier(CAMERA_DISTANCE_MODIFIER);
 			}
 		}
 	}
@@ -485,8 +543,12 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
+			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);
 			if (scale != null) {
 				scale.removeModifier(SCALE_MODIFIER);
+			}
+			if (cameraDistance != null) {
+				cameraDistance.removeModifier(CAMERA_DISTANCE_MODIFIER);
 			}
 		}
 
@@ -494,7 +556,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
-	public void tick() {
+	public void tick() { // todo pick up entities (boat-like)
 		World world = getWorld();
 		boolean isClient = world.isClient;
 
@@ -514,6 +576,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		super.tick();
 		interpolator.tick();
+
+		int thrustTicks = getThrustTicks() - 1;
+		if (thrustTicks >= 0) {
+			setThrustTicks(thrustTicks);
+		}
 
 		if (this.isLogicalSideForUpdatingMovement()) {
 			if (!wasLogicalSideForUpdatingMovement) {
@@ -733,6 +800,19 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		rigidBody.setOrientation(quat);
 
 		/* simulate */
+		if (getThrustTicks() > 0) {
+			var config = VolareServerConfig.get(getWorld());
+			if (config.isBoostEnabled()) {
+				float forwardSpeed = rigidBody.directionToLocal(rigidBody.getVelocity()).z;
+				float forwardThrust = Math.max(0.0f, config.boostMaxSpeed - forwardSpeed) * config.boostForce;
+				rigidBody.applyForceAtPoint(
+					new Vector3f(0.0f, 0.0f, forwardThrust),
+					new Vector3f(0, 1.0f, 8.0f)
+						.mul(1 / 16f)
+						.add(centerOfMass)
+				);
+			}
+		}
 
 		// gravity
 		rigidBody.applyForceAtCoM(rigidBody.directionToLocal(scratch.set(0, -9.8f * rigidBody.mass / 20.0f, 0)));
@@ -747,7 +827,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		/* extract results */
 		var vel = rigidBody.getVelocity();
 
-		if (vel.lengthSquared() > 100 * 100) { // prevent physics explosions
+		if (vel.lengthSquared() > 1000 * 1000) { // prevent physics explosions
 			vel = new Vector3f(0);
 			remove(RemovalReason.KILLED);
 			Volare.LOG.warn("GliderEntity {} ({}) exploded due to excessive velocity: {}", this.getUuid(), this, vel);
