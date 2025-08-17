@@ -36,6 +36,9 @@
     "client": [
       "io.github.slimeistdev.volare.VolareClient"
     ],
+    "fabric-datagen": [
+      "io.github.slimeistdev.volare.datagen.VolareDataGenerator"
+    ],
     "modmenu": [
       "io.github.slimeistdev.volare.compat.VolareModMenu"
     ]

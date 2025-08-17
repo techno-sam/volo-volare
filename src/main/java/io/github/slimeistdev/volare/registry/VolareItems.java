@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -36,9 +35,9 @@ public class VolareItems {
 		new Item.Settings()
 			.maxCount(1)
 			.component(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(List.of(
-				ParticleTypes.CHERRY_LEAVES,
+				/*ParticleTypes.CHERRY_LEAVES,
 				ParticleTypes.END_ROD,
-				ParticleTypes.GLOW
+				ParticleTypes.GLOW*/
 			)))
 	);
 

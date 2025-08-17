@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:pale_oak_leaves",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:pale_oak_leaves"
+  }
+}

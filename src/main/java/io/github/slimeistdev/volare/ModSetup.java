@@ -8,6 +8,8 @@ public class ModSetup {
 		VolareDataComponentTypes.init();
 		VolareEntities.init();
 		VolareItems.init();
+		VolareSlotDisplays.init();
+		VolareRecipeSerializers.init();
 		VolareSoundEvents.init();
 		AreaLibProxy.init();
 		VolareCommands.init();

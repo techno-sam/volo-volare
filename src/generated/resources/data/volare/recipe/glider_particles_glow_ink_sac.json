@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:glow_ink_sac",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:glow"
+  }
+}

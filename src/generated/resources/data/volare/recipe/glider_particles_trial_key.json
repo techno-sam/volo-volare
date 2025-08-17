@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:trial_key",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:trial_omen"
+  }
+}

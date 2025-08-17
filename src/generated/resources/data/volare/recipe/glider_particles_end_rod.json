@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:end_rod",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:end_rod"
+  }
+}

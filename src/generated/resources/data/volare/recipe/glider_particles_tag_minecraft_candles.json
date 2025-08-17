@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "#minecraft:candles",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:small_flame"
+  }
+}

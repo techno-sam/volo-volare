@@ -34,5 +34,6 @@ public class VolareDataComponentTypes {
 
 	public static void init() {
 		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_FROZEN_MOTION);
+		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_PARTICLES);
 	}
 }

@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:spore_blossom",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:spore_blossom_air"
+  }
+}

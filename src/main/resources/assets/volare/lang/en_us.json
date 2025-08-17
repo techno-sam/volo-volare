@@ -11,6 +11,8 @@
   "tooltip.volare.frozen_motion.zero": "Frozen until ridden",
   "tooltip.volare.frozen_motion": "Frozen motion: (%s, %s, %s)",
 
+  "tooltip.volare.glider_particles": "Wingtip Particles:",
+
   "commands.volare.area.flak.added": "Added FLAK to area %s",
   "commands.volare.area.flak.removed": "Removed FLAK from area %s",
 
@@ -66,5 +68,21 @@
   "yacl3.config.volare:server_config.thermalsStrength.desc.1": "Thermal strength in blocks per second.",
   "yacl3.config.volare:server_config.thermalsStrength.desc.2": "A value of 0 disables thermals.",
   "yacl3.config.volare:server_config.thermalsStrength.fmt": "%s blocks/s",
-  "yacl3.config.volare:server_config.thermalsStrength.fmt.min": "Disabled"
+  "yacl3.config.volare:server_config.thermalsStrength.fmt.min": "Disabled",
+
+  "volare.particle.minecraft.cherry_leaves": "Cherry Leaves",
+  "volare.particle.minecraft.dragon_breath": "Dragon's Breath",
+  "volare.particle.minecraft.end_rod": "End Rod",
+  "volare.particle.minecraft.electric_spark": "Electric Spark",
+  "volare.particle.minecraft.enchant": "Enchant",
+  "volare.particle.minecraft.firefly": "Firefly",
+  "volare.particle.minecraft.flame": "Flame",
+  "volare.particle.minecraft.glow": "Glow",
+  "volare.particle.minecraft.heart": "Heart",
+  "volare.particle.minecraft.pale_oak_leaves": "Pale Oak Leaves",
+  "volare.particle.minecraft.small_flame": "Small Flame",
+  "volare.particle.minecraft.soul": "Soul",
+  "volare.particle.minecraft.soul_fire_flame": "Soul Fire Flame",
+  "volare.particle.minecraft.spore_blossom_air": "Spore Blossom",
+  "volare.particle.minecraft.trial_omen": "Trial Omen"
 }

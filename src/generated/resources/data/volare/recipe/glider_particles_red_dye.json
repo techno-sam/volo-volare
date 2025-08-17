@@ -1,0 +1,8 @@
+{
+  "type": "volare:glider_particle",
+  "addition": "minecraft:red_dye",
+  "base": "volare:glider",
+  "particle": {
+    "type": "minecraft:heart"
+  }
+}
