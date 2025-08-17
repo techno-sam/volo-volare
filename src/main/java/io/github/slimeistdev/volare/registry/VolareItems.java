@@ -3,6 +3,7 @@ package io.github.slimeistdev.volare.registry;
 import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.content.glider.GliderItem;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
+import io.github.slimeistdev.volare.content.glider.components.GliderVariant;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
@@ -39,6 +40,7 @@ public class VolareItems {
 				ParticleTypes.END_ROD,
 				ParticleTypes.GLOW*/
 			)))
+			.component(VolareDataComponentTypes.GLIDER_VARIANT, GliderVariant.DEFAULT)
 	);
 
 	private static <T extends Item> T register(String id, Function<Item.Settings, T> factory) {

@@ -1,6 +1,5 @@
 package io.github.slimeistdev.volare.content.glider.render;
 
-import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.content.glider.GliderEntity;
 import io.github.slimeistdev.volare.registry.client.VolareEntityRenderers;
 import net.fabricmc.api.EnvType;
@@ -10,7 +9,6 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
@@ -19,8 +17,6 @@ import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
 
 @Environment(EnvType.CLIENT)
 public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRenderState> {
-	private static final Identifier TEXTURE = Volare.id("textures/entity/glider/glider.png");
-
 	protected final GliderEntityModel model;
 
 	public GliderEntityRenderer(EntityRendererFactory.Context context) {
@@ -61,7 +57,7 @@ public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRen
 		matrices.translate(state.centerOfMass.x(), state.centerOfMass.y(), -state.centerOfMass.z());
 
 		this.model.setAngles(state);
-		this.model.render(matrices, vertexConsumers.getBuffer(this.model.getLayer(TEXTURE)), light, OverlayTexture.DEFAULT_UV);
+		this.model.render(matrices, vertexConsumers.getBuffer(this.model.getLayer(state.texture)), light, OverlayTexture.DEFAULT_UV);
 
 		matrices.pop();
 
@@ -76,6 +72,8 @@ public class GliderEntityRenderer extends EntityRenderer<GliderEntity, GliderRen
 	@Override
 	public void updateRenderState(GliderEntity entity, GliderRenderState state, float tickProgress) {
 		super.updateRenderState(entity, state, tickProgress);
+
+		state.texture = entity.getVariant().assetInfo().texturePath();
 
 		state.quat = entity.getQuatClient(tickProgress);
 

@@ -3,7 +3,9 @@ package io.github.slimeistdev.volare.content.glider;
 import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.compat.area_lib.AreaLibProxy;
 import io.github.slimeistdev.volare.config.VolareServerConfig;
+import io.github.slimeistdev.volare.content.glider.components.GliderFrozenMotionComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
+import io.github.slimeistdev.volare.content.glider.components.GliderVariant;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
 import io.github.slimeistdev.volare.network.VolarePackets;
@@ -12,6 +14,7 @@ import io.github.slimeistdev.volare.network.s2c.SetGliderPhysicsS2CPacket;
 import io.github.slimeistdev.volare.registry.VolareDataComponentTypes;
 import io.github.slimeistdev.volare.registry.VolareSoundEvents;
 import io.github.slimeistdev.volare.registry.VolareTags;
+import io.github.slimeistdev.volare.registry.VolareTrackedData;
 import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
 import net.minecraft.block.BlockState;
@@ -88,6 +91,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected static final TrackedData<Integer> PITCH_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<Integer> YAW_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<Integer> THRUST_TICKS = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	protected static final TrackedData<GliderVariant> VARIANT = DataTracker.registerData(GliderEntity.class, VolareTrackedData.GLIDER_VARIANT);
 
 	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, 3);
 	private final Supplier<Item> itemSupplier;
@@ -155,9 +159,35 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
+	public @NotNull ItemStack getPickBlockStack() {
+		ItemStack stack = new ItemStack(asItem());
+
+		stack.copy(DataComponentTypes.CUSTOM_NAME, this);
+		stack.copy(DataComponentTypes.CUSTOM_DATA, this);
+		stack.copy(VolareDataComponentTypes.GLIDER_PARTICLES, this);
+		stack.copy(VolareDataComponentTypes.GLIDER_FROZEN_MOTION, this);
+
+		stack.set(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(wingtipParticles));
+		return stack;
+	}
+
+	@Override
+	public @Nullable <T> T get(ComponentType<? extends T> type) {
+		if (type == VolareDataComponentTypes.GLIDER_PARTICLES) {
+			return castComponentValue(type, new GliderParticlesComponent(wingtipParticles));
+		} else if (type == VolareDataComponentTypes.GLIDER_FROZEN_MOTION) {
+			return frozenMotion == null ? null : castComponentValue(type, new GliderFrozenMotionComponent(new Vector3f(frozenMotion)));
+		} else if (type == VolareDataComponentTypes.GLIDER_VARIANT) {
+			return castComponentValue(type, getVariant());
+		}
+		return super.get(type);
+	}
+
+	@Override
 	protected void copyComponentsFrom(ComponentsAccess from) {
 		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_PARTICLES);
 		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_FROZEN_MOTION);
+		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_VARIANT);
 		super.copyComponentsFrom(from);
 	}
 
@@ -168,6 +198,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			return true;
 		} else if (type == VolareDataComponentTypes.GLIDER_FROZEN_MOTION) {
 			this.frozenMotion = castComponentValue(VolareDataComponentTypes.GLIDER_FROZEN_MOTION, value).frozenMotionMut();
+			return true;
+		} else if (type == VolareDataComponentTypes.GLIDER_VARIANT) {
+			dataTracker.set(VARIANT, castComponentValue(VolareDataComponentTypes.GLIDER_VARIANT, value));
 			return true;
 		}
 		return super.setApplicableComponent(type, value);
@@ -191,6 +224,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.yawControl = yawControl;
 		dataTracker.set(PITCH_CONTROL, pitchControl);
 		dataTracker.set(YAW_CONTROL, yawControl);
+	}
+
+	public void setVariant(GliderVariant variant) {
+		dataTracker.set(VARIANT, variant);
+	}
+
+	public GliderVariant getVariant() {
+		return dataTracker.get(VARIANT);
 	}
 
 	public float getAileronAngle(float tickProgress) {
@@ -222,6 +263,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		builder.add(PITCH_CONTROL, 0);
 		builder.add(YAW_CONTROL, 0);
 		builder.add(THRUST_TICKS, 0);
+		builder.add(VARIANT, GliderVariant.DEFAULT);
 	}
 
 	@Override
@@ -298,17 +340,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		this.kill(world);
 		if (world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {
-			ItemStack itemStack = getPickBlockStack();
-			itemStack.set(DataComponentTypes.CUSTOM_NAME, this.getCustomName());
-			this.dropStack(world, itemStack);
+			this.dropStack(world, getPickBlockStack());
 		}
-	}
-
-	@Override
-	public @NotNull ItemStack getPickBlockStack() {
-		ItemStack stack = new ItemStack(asItem());
-		stack.set(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(wingtipParticles));
-		return stack;
 	}
 
 	@Override
@@ -320,6 +353,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		setWingtipParticles(view.read("WingtipParticles", ParticleTypes.TYPE_CODEC.listOf()).orElse(List.of()));
 
 		setThrustTicks(view.getInt("ThrustTicks", 0));
+
+		setVariant(view.read("Variant", GliderVariant.CODEC).orElse(GliderVariant.DEFAULT));
 	}
 
 	@Override
@@ -337,6 +372,10 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		int thrustTicks = getThrustTicks();
 		if (thrustTicks > 0) {
 			view.putInt("ThrustTicks", thrustTicks);
+		}
+
+		if (!GliderVariant.DEFAULT.equals(getVariant())) {
+			view.put("Variant", GliderVariant.CODEC, getVariant());
 		}
 	}
 

@@ -6,6 +6,7 @@ import io.github.slimeistdev.volare.registry.*;
 public class ModSetup {
 	public static void init() {
 		VolareDataComponentTypes.init();
+		VolareTrackedData.init();
 		VolareEntities.init();
 		VolareItems.init();
 		VolareSlotDisplays.init();
