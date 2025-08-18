@@ -68,6 +68,16 @@ Custom gliders can be added to Volo Volare's creative tab by creating a JSON fil
 }
 ```
 
+## [Area Lib](https://modrinth.com/mod/area_lib) Integration
+
+### Flak
+
+An area can be configured to shoot down any gliders that fly through it using the `/volare area flak` command.
+
+### Thermals
+
+An area can be configured to act as an updraft or downdraft using the `/volare area thermal` command.
+
 ---
 
 *About the name: The first two principal parts of the latin verb for flight are 'volo volare' ('I fly', 'to fly'), but 'volo' also means 'I want', thus 'volo volare' means 'I want to fly'.*

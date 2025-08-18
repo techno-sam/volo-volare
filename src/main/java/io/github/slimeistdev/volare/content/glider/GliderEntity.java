@@ -6,6 +6,7 @@ import io.github.slimeistdev.volare.config.VolareServerConfig;
 import io.github.slimeistdev.volare.content.glider.components.GliderFrozenMotionComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderVariant;
+import io.github.slimeistdev.volare.content.glider.sounds.GliderSoundInstanceProxy;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatPositionInterpolator;
 import io.github.slimeistdev.volare.network.VolarePackets;
@@ -17,18 +18,15 @@ import io.github.slimeistdev.volare.registry.VolareTags;
 import io.github.slimeistdev.volare.registry.VolareTrackedData;
 import io.github.slimeistdev.volare.util.LerpedFloat;
 import io.github.slimeistdev.volare.util.MathUtil;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.ComponentsAccess;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.PositionInterpolator;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -265,6 +263,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		return centerOfPressure;
 	}
 
+	@Environment(EnvType.CLIENT)
+	public float getClientSpeed() {
+		return (float) getLerpedPos(1.0f).distanceTo(getLerpedPos(0.0f));
+	}
+
 	@Override
 	protected void initDataTracker(DataTracker.Builder builder) {
 		super.initDataTracker(builder);
@@ -324,6 +327,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	@Override
 	protected @NotNull Item asItem() {
 		return itemSupplier.get();
+	}
+
+	@Override
+	public boolean isFlyingVehicle() {
+		return true;
 	}
 
 	@Override
@@ -618,10 +626,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			frozenMotion = null;
 		}
 
-		if (passenger instanceof ServerPlayerEntity serverPlayer) {
+		if (passenger instanceof ServerPlayerEntity serverPlayer && passenger == getControllingPassenger()) {
 			VolarePackets.PACKETS.sendTo(serverPlayer, new SetGliderPhysicsS2CPacket(this));
 		}
 
+		passenger.streamPassengersAndSelf().forEach(this::handlePassengerAddition);
+	}
+
+	protected void handlePassengerAddition(Entity passenger) {
 		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
 			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);
@@ -632,12 +644,22 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				cameraDistance.addTemporaryModifier(CAMERA_DISTANCE_MODIFIER);
 			}
 		}
+
+		if (passenger instanceof PlayerEntity player) {
+			GliderSoundInstanceProxy.tryCreate(player, this);
+		}
 	}
 
 	@Override
 	protected void removePassenger(Entity passenger) {
 		super.removePassenger(passenger);
 
+		passenger.streamPassengersAndSelf().forEach(this::handlePassengerRemoval);
+
+		setControls(0, 0);
+	}
+
+	protected void handlePassengerRemoval(Entity passenger) {
 		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
 			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);
@@ -648,8 +670,6 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 				cameraDistance.removeModifier(CAMERA_DISTANCE_MODIFIER);
 			}
 		}
-
-		setControls(0, 0);
 	}
 
 	public boolean isSmallerThanBoat(Entity entity) {

@@ -4,5 +4,13 @@
       "minecraft:mob/ghast/fireball4"
     ],
     "subtitle": "subtitles.volare.entity.glider.boost"
+  },
+  "entity.glider.flying": {
+    "sounds": [
+      {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "volume": 0.6
+      }
+    ]
   }
 }

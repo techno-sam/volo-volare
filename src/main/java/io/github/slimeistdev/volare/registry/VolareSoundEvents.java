@@ -8,6 +8,7 @@ import net.minecraft.sound.SoundEvent;
 @SuppressWarnings("SameParameterValue")
 public class VolareSoundEvents {
 	public static final SoundEvent GLIDER_BOOST = register("entity.glider.boost");
+	public static final SoundEvent GLIDER_FLYING = register("entity.glider.flying");
 
 	private static SoundEvent register(String id) {
 		var id_ = Volare.id(id);
