@@ -1,6 +1,11 @@
 package io.github.slimeistdev.volare.content.glider;
 
-import org.joml.*;
+import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
+import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class RigidBody {
 	public final float mass;

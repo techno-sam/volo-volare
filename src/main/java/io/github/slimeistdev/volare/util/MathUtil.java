@@ -1,6 +1,11 @@
 package io.github.slimeistdev.volare.util;
 
-import org.joml.*;
+import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
+import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import static net.minecraft.util.math.MathHelper.DEGREES_PER_RADIAN;
 import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;

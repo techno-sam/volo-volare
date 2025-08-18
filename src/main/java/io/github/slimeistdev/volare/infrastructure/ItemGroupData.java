@@ -9,7 +9,9 @@ import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public record ItemGroupData(List<Entry> entries) implements Stackable<ItemGroupData> {
 	public static final MapCodec<ItemGroupData> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
