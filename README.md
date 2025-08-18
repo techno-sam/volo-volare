@@ -19,20 +19,54 @@ Volo Volare adds a highly-configurable toy glider.
 - Extend your flight by flying through thermals produced by campfires, fire, magma, and lava.  
   (block tag: `volare:thermal_source`)
 - Configure arbitrary wingtip particles with the `volare:glider/particles` component.  
-  `/give @s volare:glider[volare:glider/particles=[{type:"minecraft:electric_spark"}, {type:"minecraft:heart"}]]`
+  ```
+  /give @s volare:glider[volare:glider/particles=[{type:"minecraft:electric_spark"}, {type:"minecraft:heart"}]]
+  ```
 - Give a glider an initial speed boost with the `volare:glider/frozen_motion` component.  
-  `/give @s volare:glider[volare:glider/frozen_motion=[0.0f, 0.0f, 0.8f]]`
+  ```
+  /give @s volare:glider[volare:glider/frozen_motion=[0.0f, 0.0f, 0.8f]]
+  ```
 
 ---
+
+![a glider flying above the clouds with animals riding on the wings](https://cdn.modrinth.com/data/6vF0WWqw/images/7793e9c1a8a7ad16b59b3ece6710eb8cb6a7b9a2.png)
+
+---
+
+## Config
 
 To configure 1st- and 3rd-person roll, edit `config/volare.json5` or use the in-game config screen.
 
 To configure thermals and boost, edit `<world_path>/serverconfig/volare-server.json5` or use the in-game config screen.
 Server configs are automatically synced to clients.
 
----
+## Customization
 
-![a glider flying above the clouds with animals riding on the wings](https://cdn.modrinth.com/data/6vF0WWqw/images/7793e9c1a8a7ad16b59b3ece6710eb8cb6a7b9a2.png)
+### Custom Textures
+
+To create a glider with custom textures:
+1. Place a texture at the path `assets/<namespace>/textures/entity/glider/<texture_name>.png`
+2. Create a translation for the key `entity.volare.glider.variant.<namespace>.entity.glider.<texture_name>` in `assets/<namespace>/lang/en_us.json`
+3. Spawn a glider with the texture using the command:
+   ```
+   /give @s volare:glider[volare:glider/variant="<namespace>:entity/glider/<texture_name>"]
+   ```
+
+### Modifying Volo Volare's Creative Tab
+
+Custom gliders can be added to Volo Volare's creative tab by creating a JSON file in your resourcepack at `assets/volare/volare_item_groups/main.json`
+```json
+{
+  "entries": [
+    {
+      "id": "volare:glider",
+      "components": {
+        "volare:glider/variant": "<namespace>:entity/glider/<texture_name>"
+      }
+    }
+  ]
+}
+```
 
 ---
 

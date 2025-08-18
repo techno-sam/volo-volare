@@ -22,7 +22,13 @@ import net.minecraft.block.CampfireBlock;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.ComponentsAccess;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.*;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MovementType;
+import net.minecraft.entity.PositionInterpolator;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -163,11 +169,16 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		ItemStack stack = new ItemStack(asItem());
 
 		stack.copy(DataComponentTypes.CUSTOM_NAME, this);
-		stack.copy(DataComponentTypes.CUSTOM_DATA, this);
+
+		NbtComponent customData = get(DataComponentTypes.CUSTOM_DATA);
+		if (customData != null && !customData.isEmpty()) {
+			stack.set(DataComponentTypes.CUSTOM_DATA, customData);
+		}
+
 		stack.copy(VolareDataComponentTypes.GLIDER_PARTICLES, this);
 		stack.copy(VolareDataComponentTypes.GLIDER_FROZEN_MOTION, this);
+		stack.copy(VolareDataComponentTypes.GLIDER_VARIANT, this);
 
-		stack.set(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(wingtipParticles));
 		return stack;
 	}
 
