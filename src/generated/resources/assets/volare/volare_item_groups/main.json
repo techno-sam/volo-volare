@@ -6,6 +6,13 @@
     },
     {
       "components": {
+        "volare:glider/variant": "volare:entity/glider/simplified"
+      },
+      "count": 1,
+      "id": "volare:glider"
+    },
+    {
+      "components": {
         "volare:glider/particles": [
           {
             "type": "minecraft:cherry_leaves"
@@ -17,6 +24,24 @@
             "type": "minecraft:glow"
           }
         ]
+      },
+      "count": 1,
+      "id": "volare:glider"
+    },
+    {
+      "components": {
+        "volare:glider/particles": [
+          {
+            "type": "minecraft:cherry_leaves"
+          },
+          {
+            "type": "minecraft:end_rod"
+          },
+          {
+            "type": "minecraft:glow"
+          }
+        ],
+        "volare:glider/variant": "volare:entity/glider/simplified"
       },
       "count": 1,
       "id": "volare:glider"
