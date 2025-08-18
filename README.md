@@ -1,10 +1,14 @@
 <!--suppress HtmlDeprecatedTag, XmlDeprecatedElement, HtmlDeprecatedAttribute -->
 <p align="center">
-<img alt="mod icon" src="https://raw.githubusercontent.com/techno-sam/volo-volare/refs/heads/fabric-1.21.8/dev/src/main/resources/assets/volare/icon.png" width="128"/>
+<img alt="mod icon: a colorful glider superimposed on a blue sky with clouds" src="https://raw.githubusercontent.com/techno-sam/volo-volare/refs/heads/fabric-1.21.8/dev/src/main/resources/assets/volare/icon.png" width="128"/>
 </p>
 
 <p align="center">
-Step into a model glider and soar into a world of wonder.
+Step into a model glider and soar into a world of wonder.<br/>
+</p>
+
+<p align="center">
+<a href="https://modfest.net/toybox"><img alt="Made for Modfest: Toybox" src="https://raw.githubusercontent.com/ModFest/art/refs/heads/v2/badge/svg/toybox/compact.svg"></a>
 </p>
 
 ---
@@ -33,5 +37,3 @@ Server configs are automatically synced to clients.
 ---
 
 *About the name: The first two principal parts of the latin verb for flight are 'volo volare' ('I fly', 'to fly'), but 'volo' also means 'I want', thus 'volo volare' means 'I want to fly'.*
-
-![Made for Modfest: Toybox](https://github.com/ModFest/art/raw/refs/heads/v2/badge/svg/toybox/cozy.svg)
