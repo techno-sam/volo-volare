@@ -6,6 +6,7 @@ import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.AutoGen;
 import dev.isxander.yacl3.config.v2.api.autogen.FloatSlider;
 import dev.isxander.yacl3.config.v2.api.autogen.IntSlider;
+import dev.isxander.yacl3.config.v2.api.autogen.TickBox;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.config.serializers.NoOpConfigSerializer;
@@ -68,6 +69,16 @@ public class VolareServerConfig {
 	@AutoGen(category = "thermals")
 	@FloatSlider(min = 0.0f, max = 10.0f, step = 0.1f)
 	public float thermalsStrength = 2.5f;
+
+	@SerialEntry(comment = "Maximum number of passengers on a glider.")
+	@AutoGen(category = "misc")
+	@IntSlider(min = 1, max = 13, step = 2)
+	public int maxPassengers = 5;
+
+	@SerialEntry(comment = "Prevent mobs bigger than a glider from riding it.")
+	@AutoGen(category = "misc")
+	@TickBox
+	public boolean restrictPassengerSize = true;
 
 	@ApiStatus.Internal
 	public VolareServerConfig() {}

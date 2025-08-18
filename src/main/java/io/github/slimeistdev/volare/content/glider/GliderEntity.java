@@ -577,7 +577,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	protected int getMaxPassengers() {
-		return 5;
+		return VolareServerConfig.get(getWorld()).maxPassengers;
 	}
 
 	@Override
@@ -653,7 +653,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	public boolean isSmallerThanBoat(Entity entity) {
-		return entity.getWidth() < this.getWidth();
+		return entity.getWidth() < this.getWidth() || !VolareServerConfig.get(getWorld()).restrictPassengerSize;
 	}
 
 	protected void pickUpPassengers() {

@@ -16,8 +16,8 @@
 
   "tooltip.volare.glider_particles": "Wingtip Particles:",
 
-  "commands.volare.area.flak.added": "Added FLAK to area %s",
-  "commands.volare.area.flak.removed": "Removed FLAK from area %s",
+  "commands.volare.area.flak.added": "Added flak to area %s",
+  "commands.volare.area.flak.removed": "Removed flak from area %s",
 
   "commands.volare.area.thermal.set.absolute": "Set absolute thermal strength for area %s to %s blocks/s",
   "commands.volare.area.thermal.set.relative": "Set relative thermal strength for area %s to %s",
@@ -72,6 +72,15 @@
   "yacl3.config.volare:server_config.thermalsStrength.desc.2": "A value of 0 disables thermals.",
   "yacl3.config.volare:server_config.thermalsStrength.fmt": "%s blocks/s",
   "yacl3.config.volare:server_config.thermalsStrength.fmt.min": "Disabled",
+
+  "yacl3.config.volare:server_config.category.misc": "Miscellaneous",
+
+  "yacl3.config.volare:server_config.maxPassengers": "Passenger Limit",
+  "yacl3.config.volare:server_config.maxPassengers.desc": "Maximum number of passengers on a glider.",
+  "yacl3.config.volare:server_config.maxPassengers.fmt": "%s passengers",
+
+  "yacl3.config.volare:server_config.restrictPassengerSize": "Restrict Passenger Size",
+  "yacl3.config.volare:server_config.restrictPassengerSize.desc": "Prevent mobs bigger than a glider from riding it.",
 
   "volare.particle.minecraft.cherry_leaves": "Cherry Leaves",
   "volare.particle.minecraft.dragon_breath": "Dragon's Breath",
