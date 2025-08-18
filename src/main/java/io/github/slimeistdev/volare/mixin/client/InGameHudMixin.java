@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.minecraft.util.math.MathHelper.RADIANS_PER_DEGREE;
 
-@Mixin(value = InGameHud.class, remap = false)
+@Mixin(InGameHud.class)
 public class InGameHudMixin {
 	@Shadow
 	@Final
