@@ -4,8 +4,8 @@ import io.github.slimeistdev.volare.Volare;
 import io.github.slimeistdev.volare.content.glider.GliderItem;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderVariant;
+import io.github.slimeistdev.volare.infrastructure.DynamicItemGroups;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
@@ -35,11 +35,7 @@ public class VolareItems {
 		GliderItem.create(VolareEntities.GLIDER),
 		new Item.Settings()
 			.maxCount(1)
-			.component(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(List.of(
-				/*ParticleTypes.CHERRY_LEAVES,
-				ParticleTypes.END_ROD,
-				ParticleTypes.GLOW*/
-			)))
+			.component(VolareDataComponentTypes.GLIDER_PARTICLES, new GliderParticlesComponent(List.of()))
 			.component(VolareDataComponentTypes.GLIDER_VARIANT, GliderVariant.DEFAULT)
 	);
 
@@ -54,8 +50,6 @@ public class VolareItems {
 	}
 
 	public static void init() {
-		ItemGroupEvents.modifyEntriesEvent(MAIN_ITEM_GROUP_KEY).register(group -> {
-			group.add(VolareItems.GLIDER);
-		});
+		DynamicItemGroups.register(MAIN_ITEM_GROUP_KEY);
 	}
 }
