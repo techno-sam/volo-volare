@@ -80,10 +80,15 @@ public class VolareServerConfig {
 	@TickBox
 	public boolean restrictPassengerSize = true;
 
-	@SerialEntry(comment = "Glider interpolation ticks. A value of 0 disables interpolation.")
+	@SerialEntry(comment = "Server-side glider interpolation ticks. A value of 0 disables interpolation.")
 	@AutoGen(category = "misc")
 	@IntSlider(min = 0, max = 3, step = 1)
-	public int interpolationTicks = 3;
+	public int serverInterpolationTicks = 3;
+
+	@SerialEntry(comment = "Client-side glider interpolation ticks. A value of 0 disables interpolation.")
+	@AutoGen(category = "misc")
+	@IntSlider(min = 0, max = 3, step = 1)
+	public int clientInterpolationTicks = 3;
 
 	@ApiStatus.Internal
 	public VolareServerConfig() {}

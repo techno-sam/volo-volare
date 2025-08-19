@@ -86,11 +86,17 @@
   "yacl3.config.volare:server_config.restrictPassengerSize": "Restrict Passenger Size",
   "yacl3.config.volare:server_config.restrictPassengerSize.desc": "Prevent mobs bigger than a glider from riding it.",
 
-  "yacl3.config.volare:server_config.interpolationTicks": "Interpolation Ticks",
-  "yacl3.config.volare:server_config.interpolationTicks.desc": "Smoothing period for glider motion.",
-  "yacl3.config.volare:server_config.interpolationTicks.fmt": "%s ticks",
-  "yacl3.config.volare:server_config.interpolationTicks.fmt.0": "Disabled",
-  "yacl3.config.volare:server_config.interpolationTicks.fmt.1": "1 tick",
+  "yacl3.config.volare:server_config.serverInterpolationTicks": "Server-side Interpolation Ticks",
+  "yacl3.config.volare:server_config.serverInterpolationTicks.desc": "Server-side smoothing period for glider motion.",
+  "yacl3.config.volare:server_config.serverInterpolationTicks.fmt": "%s ticks",
+  "yacl3.config.volare:server_config.serverInterpolationTicks.fmt.0": "Disabled",
+  "yacl3.config.volare:server_config.serverInterpolationTicks.fmt.1": "1 tick",
+
+  "yacl3.config.volare:server_config.clientInterpolationTicks": "Client-side Interpolation Ticks",
+  "yacl3.config.volare:server_config.clientInterpolationTicks.desc": "Client-side smoothing period for glider motion.",
+  "yacl3.config.volare:server_config.clientInterpolationTicks.fmt": "%s ticks",
+  "yacl3.config.volare:server_config.clientInterpolationTicks.fmt.0": "Disabled",
+  "yacl3.config.volare:server_config.clientInterpolationTicks.fmt.1": "1 tick",
 
   "volare.particle.minecraft.cherry_leaves": "Cherry Leaves",
   "volare.particle.minecraft.dragon_breath": "Dragon's Breath",

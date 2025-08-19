@@ -97,7 +97,12 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected static final TrackedData<Integer> THRUST_TICKS = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<GliderVariant> VARIANT = DataTracker.registerData(GliderEntity.class, VolareTrackedData.GLIDER_VARIANT);
 
-	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, VolareServerConfig.get(getWorld()).interpolationTicks);
+	private static int getInterpolationTicks(World world) {
+		var config = VolareServerConfig.get(world);
+		return world.isClient ? config.clientInterpolationTicks : config.serverInterpolationTicks;
+	}
+
+	private final QuatPositionInterpolator interpolator = new QuatPositionInterpolator(this, getInterpolationTicks(getWorld()));
 	private final Supplier<Item> itemSupplier;
 
 	private Quaternionf quatClient = new Quaternionf();
