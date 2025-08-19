@@ -44,6 +44,7 @@
   "yacl3.config.volare:server_config.boostTicks.desc": "Time to set to boost to when boost item consumed.",
   "yacl3.config.volare:server_config.boostTicks.fmt": "%s ticks",
   "yacl3.config.volare:server_config.boostTicks.fmt.0": "Disabled",
+  "yacl3.config.volare:server_config.boostTicks.fmt.1": "1 tick",
 
   "yacl3.config.volare:server_config.boostMaxSpeed": "Max Speed",
   "yacl3.config.volare:server_config.boostMaxSpeed.desc": "Maximum speed accelerated to by boost thrust.",
@@ -62,10 +63,12 @@
   "yacl3.config.volare:server_config.thermalsHeight.desc.2": "A value of 0 disables thermals.",
   "yacl3.config.volare:server_config.thermalsHeight.fmt": "%s blocks",
   "yacl3.config.volare:server_config.thermalsHeight.fmt.0": "Disabled",
+  "yacl3.config.volare:server_config.thermalsHeight.fmt.1": "1 block",
 
   "yacl3.config.volare:server_config.thermalsFullStrengthHeight": "Full Strength Height",
   "yacl3.config.volare:server_config.thermalsFullStrengthHeight.desc": "Thermal strength is constant until this height, then follows inverse-squared falloff.",
   "yacl3.config.volare:server_config.thermalsFullStrengthHeight.fmt": "%s blocks",
+  "yacl3.config.volare:server_config.thermalsFullStrengthHeight.fmt.1": "1 block",
 
   "yacl3.config.volare:server_config.thermalsStrength": "Strength",
   "yacl3.config.volare:server_config.thermalsStrength.desc.1": "Thermal strength in blocks per second.",
@@ -78,9 +81,16 @@
   "yacl3.config.volare:server_config.maxPassengers": "Passenger Limit",
   "yacl3.config.volare:server_config.maxPassengers.desc": "Maximum number of passengers on a glider.",
   "yacl3.config.volare:server_config.maxPassengers.fmt": "%s passengers",
+  "yacl3.config.volare:server_config.maxPassengers.fmt.1": "1 passenger",
 
   "yacl3.config.volare:server_config.restrictPassengerSize": "Restrict Passenger Size",
   "yacl3.config.volare:server_config.restrictPassengerSize.desc": "Prevent mobs bigger than a glider from riding it.",
+
+  "yacl3.config.volare:server_config.interpolationTicks": "Interpolation Ticks",
+  "yacl3.config.volare:server_config.interpolationTicks.desc": "Smoothing period for glider motion.",
+  "yacl3.config.volare:server_config.interpolationTicks.fmt": "%s ticks",
+  "yacl3.config.volare:server_config.interpolationTicks.fmt.0": "Disabled",
+  "yacl3.config.volare:server_config.interpolationTicks.fmt.1": "1 tick",
 
   "volare.particle.minecraft.cherry_leaves": "Cherry Leaves",
   "volare.particle.minecraft.dragon_breath": "Dragon's Breath",

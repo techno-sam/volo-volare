@@ -27,10 +27,15 @@ public class QuatPositionInterpolator extends PositionInterpolator {
 	}
 
 	public void refreshPositionAndAngles$Quat(Quaternionf quat) {
-		this.quatData.step = this.lerpDuration;
+		if (this.lerpDuration == 0) {
+			this.quatEntity.refreshPositionAndAngles$Quat(quat);
+			this.clearQuat();
+		} else {
+			this.quatData.step = this.lerpDuration;
 
-		this.quatData.quat = new Quaternionf(quat);
-		this.lastQuat = new Quaternionf(this.quatEntity.getQuatClient());
+			this.quatData.quat = new Quaternionf(quat);
+			this.lastQuat = new Quaternionf(this.quatEntity.getQuatClient());
+		}
 	}
 
 	public boolean isInterpolatingQuat() {
