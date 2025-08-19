@@ -20,16 +20,20 @@ public class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingE
 	private void updateVehicleRollState(T entity, S state, float tickProgress, CallbackInfo ci) {
 		float roll;
 		float pitch;
+		float yaw;
 		Entity rootVehicle = entity.getRootVehicle();
 		if (rootVehicle != entity && rootVehicle instanceof QuatEntity quatEntity) {
 			roll = quatEntity.getRoll(tickProgress);
 			pitch = rootVehicle.getPitch(tickProgress);
+			yaw = rootVehicle.getYaw(tickProgress);
 		} else {
 			roll = 0.0f;
 			pitch = 0.0f;
+			yaw = 0.0f;
 		}
 		((LivingEntityRenderStateDuck) state).volare$setVehicleRoll(roll);
 		((LivingEntityRenderStateDuck) state).volare$setVehiclePitch(pitch);
+		((LivingEntityRenderStateDuck) state).volare$setVehicleYaw(yaw);
 	}
 
 	@Inject(method = "setupTransforms", at = @At("RETURN"))
@@ -38,7 +42,16 @@ public class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingE
 		float pitch = ((LivingEntityRenderStateDuck) state).volare$getVehiclePitch();
 		if (roll == 0.0f && pitch == 0.0f) return;
 
+		float vehicleYaw = ((LivingEntityRenderStateDuck) state).volare$getVehicleYaw();
+		float deltaYaw = vehicleYaw - bodyYaw;
+
+		// unrotate
+		matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-deltaYaw));
+
 		matrices.multiply(RotationAxis.NEGATIVE_X.rotationDegrees(pitch));
 		matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(roll));
+
+		// re-rotate
+		matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(deltaYaw));
 	}
 }

@@ -6,4 +6,7 @@ public interface LivingEntityRenderStateDuck {
 
 	float volare$getVehiclePitch();
 	void volare$setVehiclePitch(float pitch);
+
+	float volare$getVehicleYaw();
+	void volare$setVehicleYaw(float yaw);
 }

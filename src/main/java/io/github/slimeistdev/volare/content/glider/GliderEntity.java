@@ -633,7 +633,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		passenger.streamPassengersAndSelf().forEach(this::handlePassengerAddition);
 	}
 
-	protected void handlePassengerAddition(Entity passenger) {
+	public void handlePassengerAddition(Entity passenger) {
 		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
 			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);
@@ -659,7 +659,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		setControls(0, 0);
 	}
 
-	protected void handlePassengerRemoval(Entity passenger) {
+	public void handlePassengerRemoval(Entity passenger) {
 		if (passenger instanceof LivingEntity living) {
 			EntityAttributeInstance scale = living.getAttributeInstance(EntityAttributes.SCALE);
 			EntityAttributeInstance cameraDistance = living.getAttributeInstance(EntityAttributes.CAMERA_DISTANCE);

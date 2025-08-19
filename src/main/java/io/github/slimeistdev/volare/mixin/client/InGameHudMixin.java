@@ -50,7 +50,7 @@ public class InGameHudMixin {
 	)
 	private void renderRollIndicator(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
 		Entity vehicle;
-		if (client.player != null && (vehicle = client.player.getRootVehicle()) instanceof QuatEntity quatEntity) {
+		if (client.player != null && (vehicle = client.player.getRootVehicle()) instanceof QuatEntity quatEntity && vehicle.getControllingPassenger() == client.player) {
 			var ms = context.getMatrices();
 			float tickProgress = tickCounter.getTickProgress(false);
 

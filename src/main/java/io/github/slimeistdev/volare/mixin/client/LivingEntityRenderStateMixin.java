@@ -13,6 +13,9 @@ public class LivingEntityRenderStateMixin implements LivingEntityRenderStateDuck
 	@Unique
 	private float volare$vehiclePitch;
 
+	@Unique
+	private float volare$vehicleYaw;
+
 	@Override
 	public float volare$getVehicleRoll() {
 		return volare$vehicleRoll;
@@ -31,5 +34,15 @@ public class LivingEntityRenderStateMixin implements LivingEntityRenderStateDuck
 	@Override
 	public void volare$setVehiclePitch(float pitch) {
 		this.volare$vehiclePitch = pitch;
+	}
+
+	@Override
+	public float volare$getVehicleYaw() {
+		return volare$vehicleYaw;
+	}
+
+	@Override
+	public void volare$setVehicleYaw(float yaw) {
+		this.volare$vehicleYaw = yaw;
 	}
 }
