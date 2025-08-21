@@ -619,6 +619,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		ItemStack stack = player.getStackInHand(hand);
 		if (stack.isIn(VolareTags.THRUST_SOURCE)) {
+			boostThrust();
 			stack.decrementUnlessCreative(1, player);
 			return ActionResult.SUCCESS;
 		}
