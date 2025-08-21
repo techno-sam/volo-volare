@@ -5,10 +5,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.slimeistdev.volare.content.glider.GliderEntity;
 import io.github.slimeistdev.volare.infrastructure.QuatEntity;
+import io.github.slimeistdev.volare.util.MathUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionfc;
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,8 +43,15 @@ public abstract class EntityMixin {
 		)
 	)
 	private void rollPassengers(Entity.PositionUpdater instance, Entity passenger, double x, double y, double z, Operation<Void> original) {
-		if (this.getRootVehicle() instanceof QuatEntity quatEntity) {
-			Quaternionfc quat = getWorld().isClient ? quatEntity.getQuatClient() : quatEntity.getQuat();
+		Entity rootVehicle = this.getRootVehicle();
+		if (rootVehicle instanceof QuatEntity quatEntity) {
+			Quaternionf quat = new MathUtil.EulerAngles(
+				-rootVehicle.getYaw(), // we do need to rotate what the roll axis means
+				-rootVehicle.getPitch(),
+				quatEntity.getRoll()
+			).getQuat();
+			// unrotate, so although we've yawed the axes, we aren't actually yawing transforms
+			quat.rotateY(-(180 - rootVehicle.getYaw()) * (float) (Math.PI / 180.0f));
 			Vector3d offset = quat.transform(
 				x - getX(),
 				y - getY(),

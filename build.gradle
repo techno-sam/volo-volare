@@ -43,6 +43,18 @@ repositories {
 			includeGroup "com.terraformersmc"
 		}
 	}
+	exclusiveContent {
+		forRepository {
+			//noinspection ForeignDelegate
+			maven {
+				name 'Sleeping Town'
+				url "https://repo.sleeping.town/"
+			}
+		}
+		filter {
+			includeGroup "folk.sisby"
+		}
+	}
 }
 
 dependencies {
@@ -67,6 +79,16 @@ dependencies {
 
 	if (!inCI && enable_arealib.toBoolean()) {
 		modRuntimeOnly libs.arealib
+	}
+
+	if (!inCI && enable_dolls.toBoolean()) {
+		modRuntimeOnly libs.dolls
+		modRuntimeOnly libs.kaleido
+
+		if (enable_dolls_compile.toBoolean()) {
+			modCompileOnly libs.dolls
+			modCompileOnly libs.kaleido
+		}
 	}
 
 	include(implementation(annotationProcessor(libs.mixinextras.get())))

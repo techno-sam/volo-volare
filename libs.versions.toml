@@ -11,6 +11,8 @@ jsonem = "0.3+1.21.8"
 yacl = "3.7.1+1.21.6-fabric"
 mm = "15.0.0-beta.3"
 arealib = "0.3.6+1.21.8"
+dolls = "1.0.0+fabric-1.21.8"
+kaleido = "0.3.1+1.3.1"
 
 [plugins]
 loom = { id = "fabric-loom", version.ref = "loom" }
@@ -26,3 +28,5 @@ jsonem = { group = "maven.modrinth", name = "jsonem", version.ref = "jsonem" }
 yacl = { group = "dev.isxander", name = "yet-another-config-lib", version.ref = "yacl" }
 mm = { group = "com.terraformersmc", name = "modmenu", version.ref = "mm" }
 arealib = { group = "maven.modrinth", name = "area_lib", version.ref = "arealib" }
+dolls = { group = "maven.modrinth", name = "be-a-doll", version.ref = "dolls" }
+kaleido = { group = "folk.sisby", name = "kaleido-config", version.ref = "kaleido" }

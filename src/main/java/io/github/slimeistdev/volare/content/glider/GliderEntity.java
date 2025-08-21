@@ -145,7 +145,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.centerOfMass = params.centerOfMass();
 		this.centerOfPressure = params.centerOfPressure();
 		this.wingtipOffset = params.wingtipOffset();
-		Volare.LOG.info(
+		Volare.LOG.debug(
 			"GliderEntity created with center of mass at ({}, {}, {}) and center of pressure at ({}, {}, {}). Mass: {} kg",
 			centerOfMass.x()*16, centerOfMass.y()*16, centerOfMass.z()*16,
 			centerOfPressure.x()*16, centerOfPressure.y()*16, centerOfPressure.z()*16,
@@ -443,6 +443,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	@Override
 	public float getRoll(float tickProgress) {
 		return MathHelper.lerp(tickProgress, lastRoll, roll);
+	}
+
+	@Override
+	public float getRoll() {
+		return roll;
 	}
 
 	@Override
