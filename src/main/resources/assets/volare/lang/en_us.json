@@ -16,6 +16,11 @@
 
   "tooltip.volare.glider_particles": "Wingtip Particles:",
 
+  "tooltip.volare.showcase.can_mount.false": "Unmountable",
+  "tooltip.volare.showcase.can_mount.true": "Mountable",
+  "tooltip.volare.showcase.should_tick.false": "Ticking Frozen",
+  "tooltip.volare.showcase.should_tick.true": "Ticking Enabled",
+
   "commands.volare.area.flak.added": "Added flak to area %s",
   "commands.volare.area.flak.removed": "Removed flak from area %s",
 

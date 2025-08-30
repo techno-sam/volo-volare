@@ -1,6 +1,7 @@
 package io.github.slimeistdev.volare.registry;
 
 import io.github.slimeistdev.volare.Volare;
+import io.github.slimeistdev.volare.content.glider.ShowcaseConfig;
 import io.github.slimeistdev.volare.content.glider.components.GliderFrozenMotionComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderParticlesComponent;
 import io.github.slimeistdev.volare.content.glider.components.GliderVariant;
@@ -35,6 +36,13 @@ public class VolareDataComponentTypes {
 			.packetCodec(GliderVariant.PACKET_CODEC)
 	);
 
+	public static final ComponentType<ShowcaseConfig> GLIDER_SHOWCASE_CONFIG = register(
+		"glider/showcase",
+		b -> b
+			.codec(ShowcaseConfig.CODEC)
+			.packetCodec(ShowcaseConfig.PACKET_CODEC)
+	);
+
 	@SuppressWarnings("SameParameterValue")
 	private static <T> ComponentType<T> register(String id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {
 		return Registry.register(Registries.DATA_COMPONENT_TYPE, Volare.id(id), builderOperator.apply(ComponentType.builder()).build());
@@ -44,5 +52,6 @@ public class VolareDataComponentTypes {
 		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_VARIANT);
 		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_FROZEN_MOTION);
 		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_PARTICLES);
+		ComponentTooltipAppenderRegistry.addAfter(DataComponentTypes.LORE, GLIDER_SHOWCASE_CONFIG);
 	}
 }

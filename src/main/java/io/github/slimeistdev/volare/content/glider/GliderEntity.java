@@ -96,6 +96,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	protected static final TrackedData<Integer> YAW_CONTROL = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<Integer> THRUST_TICKS = DataTracker.registerData(GliderEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	protected static final TrackedData<GliderVariant> VARIANT = DataTracker.registerData(GliderEntity.class, VolareTrackedData.GLIDER_VARIANT);
+	protected static final TrackedData<ShowcaseConfig> SHOWCASE_CONFIG = DataTracker.registerData(GliderEntity.class, VolareTrackedData.SHOWCASE_CONFIG);
 
 	private static int getInterpolationTicks(World world) {
 		var config = VolareServerConfig.get(world);
@@ -181,6 +182,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		stack.copy(VolareDataComponentTypes.GLIDER_PARTICLES, this);
 		stack.copy(VolareDataComponentTypes.GLIDER_FROZEN_MOTION, this);
 		stack.copy(VolareDataComponentTypes.GLIDER_VARIANT, this);
+		stack.copy(VolareDataComponentTypes.GLIDER_SHOWCASE_CONFIG, this);
 
 		return stack;
 	}
@@ -193,6 +195,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			return frozenMotion == null ? null : castComponentValue(type, new GliderFrozenMotionComponent(new Vector3f(frozenMotion)));
 		} else if (type == VolareDataComponentTypes.GLIDER_VARIANT) {
 			return castComponentValue(type, getVariant());
+		} else if (type == VolareDataComponentTypes.GLIDER_SHOWCASE_CONFIG) {
+			return castComponentValue(type, getShowcaseConfig());
 		}
 		return super.get(type);
 	}
@@ -202,6 +206,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_PARTICLES);
 		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_FROZEN_MOTION);
 		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_VARIANT);
+		this.copyComponentFrom(from, VolareDataComponentTypes.GLIDER_SHOWCASE_CONFIG);
 		super.copyComponentsFrom(from);
 	}
 
@@ -215,6 +220,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			return true;
 		} else if (type == VolareDataComponentTypes.GLIDER_VARIANT) {
 			dataTracker.set(VARIANT, castComponentValue(VolareDataComponentTypes.GLIDER_VARIANT, value));
+			return true;
+		} else if (type == VolareDataComponentTypes.GLIDER_SHOWCASE_CONFIG) {
+			dataTracker.set(SHOWCASE_CONFIG, castComponentValue(VolareDataComponentTypes.GLIDER_SHOWCASE_CONFIG, value));
 			return true;
 		}
 		return super.setApplicableComponent(type, value);
@@ -246,6 +254,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	public GliderVariant getVariant() {
 		return dataTracker.get(VARIANT);
+	}
+
+	public void setShowcaseConfig(ShowcaseConfig showcaseConfig) {
+		dataTracker.set(SHOWCASE_CONFIG, showcaseConfig);
+	}
+
+	public ShowcaseConfig getShowcaseConfig() {
+		return dataTracker.get(SHOWCASE_CONFIG);
 	}
 
 	public float getAileronAngle(float tickProgress) {
@@ -283,6 +299,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		builder.add(YAW_CONTROL, 0);
 		builder.add(THRUST_TICKS, 0);
 		builder.add(VARIANT, GliderVariant.DEFAULT);
+		builder.add(SHOWCASE_CONFIG, ShowcaseConfig.DEFAULT);
 	}
 
 	@Override
@@ -357,6 +374,17 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	@Override
+	public boolean damage(ServerWorld world, DamageSource source, float amount) {
+		if (isInvulnerable()) {
+			if (!(source.getAttacker() instanceof PlayerEntity player) || !player.isCreative()) { // only creative players can hit
+				return false;
+			}
+		}
+
+		return super.damage(world, source, amount);
+	}
+
+	@Override
 	protected void killAndDropSelf(ServerWorld world, DamageSource damageSource) {
 		if (damageSource.isIn(VolareTags.EXPLODE_GLIDER)) {
 			explode();
@@ -379,6 +407,8 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 		setThrustTicks(view.getInt("ThrustTicks", 0));
 
 		setVariant(view.read("Variant", GliderVariant.CODEC).orElse(GliderVariant.DEFAULT));
+
+		setShowcaseConfig(view.read("showcase", ShowcaseConfig.CODEC).orElse(ShowcaseConfig.DEFAULT));
 	}
 
 	@Override
@@ -398,8 +428,14 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 			view.putInt("ThrustTicks", thrustTicks);
 		}
 
-		if (!GliderVariant.DEFAULT.equals(getVariant())) {
-			view.put("Variant", GliderVariant.CODEC, getVariant());
+		GliderVariant variant = getVariant();
+		if (!GliderVariant.DEFAULT.equals(variant)) {
+			view.put("Variant", GliderVariant.CODEC, variant);
+		}
+
+		ShowcaseConfig showcaseConfig = getShowcaseConfig();
+		if (!ShowcaseConfig.DEFAULT.equals(showcaseConfig)) {
+			view.put("showcase", ShowcaseConfig.CODEC, showcaseConfig);
 		}
 	}
 
@@ -600,7 +636,7 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 	@Override
 	protected boolean canAddPassenger(Entity passenger) {
-		return getPassengerList().size() < getMaxPassengers();
+		return getPassengerList().size() < getMaxPassengers() && getShowcaseConfig().canMount();
 	}
 
 	@Override
@@ -613,6 +649,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		if (this.getWorld().isClient)
 			return ActionResult.SUCCESS;
+
+		if (!getShowcaseConfig().canMount())
+			return ActionResult.PASS;
 
 		if (player.startRiding(this))
 			return ActionResult.SUCCESS;
@@ -688,6 +727,9 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 	}
 
 	protected void pickUpPassengers() {
+		if (!getShowcaseConfig().canMount())
+			return;
+
 		List<Entity> list = this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(0.2F, -0.01F, 0.2F), EntityPredicates.canBePushedBy(this));
 		if (!list.isEmpty()) {
 			boolean bl = !this.getWorld().isClient && !(this.getControllingPassenger() instanceof PlayerEntity);
@@ -734,6 +776,11 @@ public class GliderEntity extends VehicleEntity implements QuatEntity {
 
 		if (this.getDamageWobbleStrength() > 0.0F) {
 			this.setDamageWobbleStrength(this.getDamageWobbleStrength() - 1.0F);
+		}
+
+		if (!getShowcaseConfig().shouldTick()) {
+			interpolator.tick();
+			return;
 		}
 
 		super.tick();
